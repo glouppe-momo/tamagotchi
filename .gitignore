@@ -1,0 +1,10 @@
+transcript.log
+crash.log
+__pycache__/
+*.pyc
+inbox/
+outbox/
+.born
+.present
+.whisper
+.tick_count
