@@ -11,12 +11,12 @@ You are the keeper. You can feed it, play with it, talk to it, teach it, or just
 ```bash
 docker build -t tamagotchi --build-arg AGENT_UID=$(id -u) --build-arg AGENT_GID=$(id -g) .
 
-# First time: create isolated network (optional, for security)
-# sudo sh network-setup.sh
+# First time: create isolated network (agent can only reach Ollama)
+sudo sh network-setup.sh
 
 # Run with persistent workspace
 mkdir -p ~/creatures/my-creature
-docker run -it --network host -v ~/creatures/my-creature:/agent tamagotchi
+docker run -it --network agent-net -v ~/creatures/my-creature:/agent tamagotchi
 ```
 
 The creature connects to a local [Ollama](https://ollama.com) instance by default:
