@@ -200,12 +200,10 @@ def main(scr):
     root = os.environ.get("AGENT_DIR", "/agent")
     inbox = os.path.join(root, "inbox")
     os.makedirs(inbox, exist_ok=True)
-    os.makedirs(os.path.join(root, "outbox"), exist_ok=True)
     try:
         import pwd
         u = pwd.getpwnam("agent")
-        for d in [inbox, os.path.join(root, "outbox")]:
-            os.chown(d, u.pw_uid, u.pw_gid)
+        os.chown(inbox, u.pw_uid, u.pw_gid)
     except: pass
 
     proc = None

@@ -3,7 +3,6 @@ crash.log
 __pycache__/
 *.pyc
 inbox/
-outbox/
 .born
 .present
 .whisper
