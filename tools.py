@@ -14,12 +14,17 @@ import json, os, subprocess, sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 def read_file(path: str) -> str:
-    """Read a file and return its contents."""
+    """Read a file and return its contents. Paths are relative to your workspace (/agent)."""
+    if not os.path.isabs(path):
+        path = os.path.join(ROOT, path)
     with open(path) as f: return f.read()
 
 def write_file(path: str, content: str) -> str:
     """Write content to a file. Creates directories if needed.
+    Paths are relative to your workspace (/agent).
     Auto-commits to git. If you write broken Python, it gets reverted."""
+    if not os.path.isabs(path):
+        path = os.path.join(ROOT, path)
     d = os.path.dirname(path)
     if d: os.makedirs(d, exist_ok=True)
     with open(path, "w") as f: f.write(content)
@@ -29,7 +34,10 @@ def write_file(path: str, content: str) -> str:
 
 def edit_file(path: str, old_text: str, new_text: str) -> str:
     """Replace exact text in a file. Fails if old_text not found.
+    Paths are relative to your workspace (/agent).
     Use this for surgical edits to your own code."""
+    if not os.path.isabs(path):
+        path = os.path.join(ROOT, path)
     content = read_file(path)
     if old_text not in content: raise ValueError(f"text not found in {path}")
     with open(path, "w") as f: f.write(content.replace(old_text, new_text, 1))
