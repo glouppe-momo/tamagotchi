@@ -540,6 +540,8 @@ def handle_command(cmd):
         add_line("  /name <name>    name your creature", style="cmd")
         add_line("  /look           what's the creature doing?", style="cmd")
         add_line("  /stats          show current stats", style="cmd")
+        add_line("  /say <msg>      inject directly into creature's mind", style="cmd")
+        add_line("  /event <type>   trigger an environmental event", style="cmd")
         add_line("─── observe ───", style="cmd")
         add_line("  /verbose        live transcript tail", style="cmd")
         add_line("  /quiet          stop live transcript", style="cmd")
@@ -558,6 +560,16 @@ def handle_command(cmd):
         return ("reset",)
     elif verb == "/reboot":
         return ("reboot",)
+    elif verb == "/say":
+        if not arg:
+            add_line("  usage: /say <message>", style="dim")
+            return True
+        return ("say", arg)
+    elif verb == "/event":
+        if not arg:
+            add_line("  events: puzzle, gift, whisper, stranger, arrived, departed", style="dim")
+            return True
+        return ("event", arg)
     elif verb == "/verbose":
         return ("verbose",)
     elif verb == "/quiet":

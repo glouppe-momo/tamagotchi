@@ -539,6 +539,41 @@ def main(scr):
                         out(f"  energy:  {s['energy']}", style="cmd")
                         out(f"  mood:    {s['mood']}", style="cmd")
                         out(f"  boredom: {s['boredom']}", style="cmd")
+                    elif action == "say":
+                        msg = r[1]
+                        out(f"  🧠 you → {msg}", style="user")
+                        send({"type": "say", "content": msg, "stats": stats.dict()})
+                    elif action == "event":
+                        etype = r[1].strip().lower()
+                        if etype == "puzzle":
+                            puzzle = random.choice(PUZZLES)
+                            drop_file(os.path.join(root, "puzzle.md"), f"# Puzzle\n\n{puzzle}\n")
+                            out(f"  🧩 puzzle triggered!", style="dim")
+                            send({"type": "puzzle", "content": puzzle, "stats": stats.dict()})
+                        elif etype == "gift":
+                            name, content = random.choice(GIFTS)
+                            drop_file(os.path.join(root, name), content)
+                            out(f"  🎁 gift: {name}", style="dim")
+                            send({"type": "gift", "content": f"A file appeared: {name}", "stats": stats.dict()})
+                        elif etype == "whisper":
+                            whisper = random.choice(WHISPERS)
+                            drop_file(os.path.join(root, ".whisper"), whisper + "\n")
+                            out(f"  💬 whisper: {whisper[:50]}...", style="dim")
+                        elif etype == "stranger":
+                            msgs = [m for m in GIFTS if m[0].endswith(".md") and "[from:" in m[1]]
+                            if msgs:
+                                name, content = random.choice(msgs)
+                                drop_file(os.path.join(root, "inbox", name), content)
+                                out(f"  👤 stranger message: {name}", style="dim")
+                                send({"type": "gift", "content": f"A message appeared in your inbox: {name}", "stats": stats.dict()})
+                        elif etype in ("arrived", "here"):
+                            out("  👋 you arrived", style="user")
+                            send({"type": "arrived", "content": "Your keeper is here, watching.", "stats": stats.dict()})
+                        elif etype in ("departed", "away"):
+                            out("  👋 you left", style="user")
+                            send({"type": "departed", "content": "Your keeper left.", "stats": stats.dict()})
+                        else:
+                            out(f"  unknown event: {etype}", style="dim")
                     elif action == "verbose":
                         if not verbose[0]:
                             verbose[0] = True
