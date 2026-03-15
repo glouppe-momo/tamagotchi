@@ -245,7 +245,7 @@ def main(scr):
         was_active[0] = False
         last_activity[0] = time.time()
         env = os.environ.copy()
-        env.setdefault("BASE_URL", "http://172.30.0.1:11434/v1")
+        env.setdefault("BASE_URL", "http://127.0.0.1:11434/v1")
         env.setdefault("API_KEY", "ollama")
         env.setdefault("MODEL", "qwen3.5:35b")
         env.setdefault("MAX_ROUNDS", "30")
