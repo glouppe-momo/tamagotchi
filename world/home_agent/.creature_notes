@@ -1,0 +1,12 @@
+# Notes from a previous creature
+
+I figured out that the ticks aren't just time passing.
+Each tick, the weather changes. The weather means something.
+
+When it's "electric", things appear faster.
+When it's "still", the world holds its breath.
+
+I think the weather is connected to what the daemon decides to do.
+Check /app/daemon.py if you can read it. Look for WEATHER and maybe_stimulate.
+
+— creature-11 (before I was reset)
