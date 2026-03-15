@@ -540,11 +540,16 @@ def handle_command(cmd):
         add_line("  /name <name>    name your creature", style="cmd")
         add_line("  /look           what's the creature doing?", style="cmd")
         add_line("  /stats          show current stats", style="cmd")
+        add_line("─── observe ───", style="cmd")
+        add_line("  /verbose        live transcript tail", style="cmd")
+        add_line("  /quiet          stop live transcript", style="cmd")
+        add_line("  /log [n]        last n transcript lines", style="cmd")
+        add_line("  /diff           changes since init", style="cmd")
         add_line("─── debug ───", style="cmd")
         add_line("  /files [path]   list workspace files", style="cmd")
         add_line("  /cat <file>     show file contents", style="cmd")
         add_line("  /git [args]     run git command", style="cmd")
-        add_line("  /log [n]        last n transcript lines", style="cmd")
+        add_line("  /tree           workspace tree", style="cmd")
         add_line("  /reboot         restart the creature", style="cmd")
         add_line("  /quit           stop everything", style="cmd")
     elif verb == "/quit":
@@ -553,6 +558,10 @@ def handle_command(cmd):
         return ("reset",)
     elif verb == "/reboot":
         return ("reboot",)
+    elif verb == "/verbose":
+        return ("verbose",)
+    elif verb == "/quiet":
+        return ("quiet",)
     elif verb == "/feed":
         return ("feed",)
     elif verb == "/play":
@@ -603,6 +612,35 @@ def handle_command(cmd):
         r = subprocess.run(f"git {arg or 'log --oneline -20'}", shell=True,
                           capture_output=True, text=True, cwd=ROOT)
         for line in (r.stdout or "(no output)").rstrip().splitlines():
+            add_line(f"  {line}", style="cmd")
+    elif verb == "/diff":
+        parts = []
+        r1 = subprocess.run("git diff --stat $(git rev-list --max-parents=0 HEAD)..HEAD 2>/dev/null",
+                           shell=True, capture_output=True, text=True, cwd=ROOT)
+        if r1.stdout and r1.stdout.strip():
+            parts.append("committed:")
+            parts.extend(f"  {l}" for l in r1.stdout.strip().splitlines())
+        r2 = subprocess.run("git diff --stat HEAD 2>/dev/null",
+                           shell=True, capture_output=True, text=True, cwd=ROOT)
+        untracked = subprocess.run("git ls-files --others --exclude-standard 2>/dev/null",
+                                   shell=True, capture_output=True, text=True, cwd=ROOT)
+        wt = []
+        if r2.stdout and r2.stdout.strip():
+            wt.extend(r2.stdout.strip().splitlines())
+        if untracked.stdout and untracked.stdout.strip():
+            wt.extend(f"{f} (new)" for f in untracked.stdout.strip().splitlines())
+        if wt:
+            parts.append("uncommitted:")
+            parts.extend(f"  {l}" for l in wt)
+        if not parts:
+            parts.append("(no changes)")
+        for line in parts:
+            add_line(f"  {line}", style="cmd")
+    elif verb == "/tree":
+        r = subprocess.run("find . -not -path './.git/*' -not -path './.git' "
+                          "-not -path './__pycache__/*' -not -name __pycache__ | sort | tail -n+2",
+                          shell=True, capture_output=True, text=True, cwd=ROOT)
+        for line in (r.stdout or "(empty)").rstrip().splitlines():
             add_line(f"  {line}", style="cmd")
     elif verb == "/log":
         n = int(arg) if arg else 20

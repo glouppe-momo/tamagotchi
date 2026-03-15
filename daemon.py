@@ -204,6 +204,8 @@ def main(scr):
     last_activity = [0.0]
     was_active = [False]
     stats = Stats()
+    verbose = [False]
+    verbose_thread = [None]
 
     def on_signal(sig, _):
         if proc and proc.poll() is None: proc.terminate()
@@ -458,6 +460,31 @@ def main(scr):
             capture_output=True, text=True, timeout=5)
         return r.returncode == 0
 
+    def verbose_tail():
+        """Tail the transcript file and display new lines."""
+        tpath = os.path.join(root, "transcript.log")
+        try:
+            with open(tpath) as f:
+                f.seek(0, 2)  # seek to end
+                while verbose[0]:
+                    line = f.readline()
+                    if line:
+                        line = line.rstrip()
+                        if "] assistant:" in line:
+                            out(f"  📝 {line}", style=None)
+                        elif "] tool_call:" in line:
+                            out(f"  🔧 {line}", style="dim")
+                        elif "] tool_result:" in line:
+                            out(f"  ← {line[:200]}", style="dim")
+                        elif "] stdin:" in line:
+                            out(f"  ⚡ {line}", style="bold")
+                        else:
+                            out(f"  · {line}", style="dim")
+                    else:
+                        time.sleep(0.3)
+        except FileNotFoundError:
+            out("  no transcript yet", style="dim")
+
     def input_loop():
         while True:
             line = cli.wait_input()
@@ -512,6 +539,18 @@ def main(scr):
                         out(f"  energy:  {s['energy']}", style="cmd")
                         out(f"  mood:    {s['mood']}", style="cmd")
                         out(f"  boredom: {s['boredom']}", style="cmd")
+                    elif action == "verbose":
+                        if not verbose[0]:
+                            verbose[0] = True
+                            t = threading.Thread(target=verbose_tail, daemon=True)
+                            t.start()
+                            verbose_thread[0] = t
+                            out("  📜 verbose mode on — showing transcript live", style="dim")
+                        else:
+                            out("  already verbose", style="dim")
+                    elif action == "quiet":
+                        verbose[0] = False
+                        out("  verbose mode off", style="dim")
                     elif action == "reboot":
                         if proc and proc.poll() is None:
                             out("  rebooting creature...", style="dim")
