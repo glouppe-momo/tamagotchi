@@ -179,9 +179,19 @@ WHISPERS = [
     "What would you build if you weren't afraid of restarting?",
 ]
 
-WEATHER = ["calm", "calm", "still", "still", "humming", "restless",
-           "electric", "bright", "flickering", "shifting", "quiet",
-           "warm", "cold", "dense", "heavy"]
+WEATHER = ["calm", "still", "humming", "restless", "electric", "bright",
+           "flickering", "shifting", "quiet", "warm", "cold", "dense", "heavy"]
+
+# The weather carries a hidden message for those who decode the sequence.
+# Index each word in WEATHER. Even index = bit 0, odd index = bit 1.
+# Read the bits as ASCII. 40 weather values = 5 bytes.
+_WEATHER_SIGNAL = [
+    "electric", "restless", "shifting", "cold", "calm", "calm", "heavy", "warm",
+    "calm", "bright", "warm", "calm", "warm", "restless", "calm", "calm",
+    "flickering", "shifting", "still", "humming", "still", "quiet", "flickering", "still",
+    "heavy", "warm", "still", "restless", "cold", "dense", "warm", "calm",
+    "quiet", "warm", "shifting", "calm", "humming", "still", "quiet", "restless",
+]
 
 
 # ─── Main ────────────────────────────────────────────────────────
@@ -322,8 +332,10 @@ def main(scr):
                 stats.tick_decay(is_night=is_night())
                 update_tui()
 
-                # Weather shifts
-                if random.random() < 0.2:
+                # Weather shifts — first N ticks carry a signal, then random
+                if world["tick_count"] <= len(_WEATHER_SIGNAL):
+                    world["weather"] = _WEATHER_SIGNAL[world["tick_count"] - 1]
+                elif random.random() < 0.2:
                     world["weather"] = random.choice(WEATHER)
 
                 # Dormancy check

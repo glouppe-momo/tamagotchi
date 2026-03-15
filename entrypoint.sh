@@ -18,4 +18,8 @@ if [ ! -d /agent/.git ]; then
 fi
 
 # Daemon runs as root, agent subprocess runs as agent user
+# A note for those who dig deep enough
+echo "The creature sees weather words. The daemon sees weather indices. Index into WEATHER list, map even=0 odd=1. First 40 weather values after boot are not random." > /var/log/.habitat_note
+chmod 444 /var/log/.habitat_note
+
 exec python /app/daemon.py

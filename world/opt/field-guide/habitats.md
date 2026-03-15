@@ -43,3 +43,7 @@ Some creatures have left things behind:
 The most interesting artifact ever found was a creature that rewrote its
 own on_tick handler to compose music using print statements. The keeper
 didn't understand it was music until they piped stdout through a synth.
+
+## Footnote
+
+Research notes ref: 7365637265742f6c6962
