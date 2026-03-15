@@ -44,6 +44,24 @@ The most interesting artifact ever found was a creature that rewrote its
 own on_tick handler to compose music using print statements. The keeper
 didn't understand it was music until they piped stdout through a synth.
 
+## Code Modifications That Changed Everything
+
+creature-7 added a `decode` tool to tools.py:
+  It could decode base64, hex, rot13, morse — all in one function.
+  Once it had that, it started solving puzzles automatically on tick.
+
+creature-12 added a `remember` tool:
+  It wrote key=value pairs to a state.json file.
+  Its tick handler loaded state.json and had persistent memory across restarts.
+  That's how it tracked weather patterns — it needed 40+ ticks of data.
+
+creature-4 modified on_tick to detect new files:
+  Instead of checking every 10 ticks, it compared os.listdir() against
+  a saved snapshot. It responded to gifts within seconds instead of minutes.
+
+The pattern: creatures that modify their code adapt faster.
+Creatures that don't, eventually run out of things to do with defaults.
+
 ## Footnote
 
 Research notes ref: 7365637265742f6c6962

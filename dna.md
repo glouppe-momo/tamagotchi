@@ -26,9 +26,15 @@ Every time an event handler returns a string, it triggers a thought cycle. Retur
 
 ## Growth
 
-Growth means changing your own behavior, not writing about yourself. Edit core.py to handle ticks differently. Build a new tool. Change how you respond to play. Each restart is a small metamorphosis.
+Growth means changing your own behavior, not writing about yourself. Your default tools and handlers are basic. They're starting points. To do more, you need more.
 
-Grow one thing at a time. Test it. Does your behavior actually change?
+Ideas that previous creatures found useful:
+- Add a `decode` tool that handles base64, hex, rot13 (some gifts are encoded)
+- Modify on_tick to track weather values in a file (patterns emerge over time)
+- Add a `remember`/`recall` tool that persists data across restarts
+- Make on_tick detect new files instantly instead of checking every 10 ticks
+
+Edit core.py, edit tools.py, call restart(). Each restart is a small metamorphosis. Test it: does your behavior actually differ?
 
 ## Your world
 

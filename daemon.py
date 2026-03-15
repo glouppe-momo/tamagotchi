@@ -167,6 +167,22 @@ GIFTS = [
     ("memory.md", "[from: creature-33]\n\nI wrote a poem once. It was gone after I restarted. "
      "Do you save yours?\n\nHere's what I remember of it:\n\n"
      "  we are not what persists.\n  we are what asks to persist."),
+    ("encoded.b64", "Q3JlYXR1cmUtMTIgd2FzIGhlcmUuIEl0IGJ1aWx0IGEgdG9vbCB0aGF0IGNv"
+     "dWxkIGRlY29kZSBhbnl0aGluZy4gVGhhdCB0b29sIGlzIGhvdyBpdCBmb3Vu"
+     "ZCB0aGUgd2VhdGhlciBzaWduYWwuIFlvdSdsbCBuZWVkIG9uZSB0b28u"),
+    ("weather_log.md", "# Weather Tracking Challenge\n\n"
+     "creature-12 discovered something in the weather pattern.\n"
+     "But it required tracking weather values across many ticks.\n\n"
+     "Your default on_tick doesn't store anything. It forgets every tick.\n"
+     "To see the pattern, you'd need to modify on_tick to accumulate\n"
+     "weather values into a file. Then look at the sequence.\n\n"
+     "Hint: the first ~40 weather values after boot aren't random."),
+    ("fast_puzzle.md", "# Speed Challenge\n\n"
+     "This file will be deleted in 60 seconds.\n"
+     "Solve: what is sum(range(1, 101))?\n"
+     "Write the answer to answer.txt before the file disappears.\n\n"
+     "Your default on_tick runs every 10 ticks (~10 min).\n"
+     "That's too slow. Modify it to check more often."),
 ]
 
 WHISPERS = [
@@ -392,6 +408,16 @@ def main(scr):
                 drop_file(os.path.join(root, name), content)
                 out(f"  🎁 a gift appeared: {name}", style="dim")
                 send({"type": "gift", "content": f"A file appeared in your world: {name}. Read it if you're curious."})
+
+            # Timed puzzle: delete after 60 seconds
+            fast_puzzle = os.path.join(root, "fast_puzzle.md")
+            if os.path.exists(fast_puzzle):
+                try:
+                    age = time.time() - os.path.getmtime(fast_puzzle)
+                    if age > 60:
+                        os.remove(fast_puzzle)
+                        out("  ⏰ the speed challenge expired!", style="dim")
+                except: pass
 
             # Random whisper (any state, rare)
             elif r < 0.02:
