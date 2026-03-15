@@ -2,7 +2,6 @@ transcript.log
 crash.log
 __pycache__/
 *.pyc
-inbox/
 .born
 .present
 .whisper

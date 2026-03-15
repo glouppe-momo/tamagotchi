@@ -198,13 +198,11 @@ _WEATHER_SIGNAL = [
 
 def main(scr):
     root = os.environ.get("AGENT_DIR", "/agent")
-    inbox = os.path.join(root, "inbox")
-    os.makedirs(inbox, exist_ok=True)
     try:
         import pwd
         u = pwd.getpwnam("agent")
-        os.chown(inbox, u.pw_uid, u.pw_gid)
-    except: pass
+    except (KeyError, ImportError):
+        u = None
 
     proc = None
     lock = threading.Lock()
@@ -573,9 +571,9 @@ def main(scr):
                             msgs = [m for m in GIFTS if m[0].endswith(".md") and "[from:" in m[1]]
                             if msgs:
                                 name, content = random.choice(msgs)
-                                drop_file(os.path.join(root, "inbox", name), content)
+                                drop_file(os.path.join(root, name), content)
                                 out(f"  👤 stranger message: {name}", style="dim")
-                                send({"type": "gift", "content": f"A message appeared in your inbox: {name}", "stats": stats.dict()})
+                                send({"type": "gift", "content": f"A file appeared in your workspace: {name}", "stats": stats.dict()})
                         elif etype in ("arrived", "here"):
                             out("  👋 you arrived", style="user")
                             send({"type": "arrived", "content": "Your keeper is here, watching.", "stats": stats.dict()})
