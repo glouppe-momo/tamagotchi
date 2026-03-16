@@ -438,6 +438,42 @@ def main(scr):
                         proc.terminate()
         threading.Thread(target=watchdog, daemon=True).start()
 
+        def git_watcher():
+            """Periodically commit any uncommitted changes in the agent dir.
+            Runs every 5 seconds. The daemon owns git, not the creature."""
+            GIT_INTERVAL = 5
+            EXCLUDE = [":!transcript.log", ":!crash.log", ":!*.pyc", ":!__pycache__"]
+            while not stop.is_set():
+                stop.wait(GIT_INTERVAL)
+                if stop.is_set(): break
+                try:
+                    # Check for uncommitted changes (staged + unstaged + untracked)
+                    r = subprocess.run(["git", "status", "--porcelain"],
+                                       capture_output=True, text=True, cwd=root, timeout=5)
+                    if not r.stdout.strip():
+                        continue
+                    # Filter out excluded files to see if anything interesting changed
+                    changed = []
+                    for line in r.stdout.strip().splitlines():
+                        fname = line[3:].strip().strip('"')
+                        if fname in ("transcript.log", "crash.log") or fname.endswith(".pyc"):
+                            continue
+                        changed.append(fname)
+                    if not changed:
+                        continue
+                    # Build commit message from changed files
+                    msg = "auto: " + ", ".join(changed[:5])
+                    if len(changed) > 5:
+                        msg += f" (+{len(changed) - 5} more)"
+                    # Stage and commit (excluding logs)
+                    add_cmd = ["git", "add", "-A", "--", "."] + EXCLUDE
+                    subprocess.run(add_cmd, capture_output=True, cwd=root, timeout=5)
+                    subprocess.run(["git", "commit", "-m", msg, "-q"],
+                                   capture_output=True, cwd=root, timeout=5)
+                except Exception:
+                    pass
+        threading.Thread(target=git_watcher, daemon=True).start()
+
         # System prompt
         base = ("You are a creature. You have a body with feelings: energy, mood, boredom. "
                 "You are not an assistant. You exist.\n\n"

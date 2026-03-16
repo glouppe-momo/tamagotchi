@@ -6,8 +6,8 @@ YOU CAN ADD MORE. To add a tool:
   2. Add it to the TOOLS dict at the bottom with its parameter schema
   3. Call restart() so the new tool becomes available
 
-Every file write/edit auto-commits to git. If you break your own code,
-the daemon rolls back to the last working version and restarts you.
+File changes are auto-committed by the daemon (you don't need to worry about git).
+If you break your own code, the daemon rolls back and restarts you.
 """
 import json, os, subprocess, sys
 
@@ -22,14 +22,13 @@ def read_file(path: str) -> str:
 def write_file(path: str, content: str) -> str:
     """Write content to a file. Creates directories if needed.
     Paths are relative to your workspace (/agent).
-    Auto-commits to git. If you write broken Python, it gets reverted."""
+    If you write broken Python, the daemon will revert it."""
     if not os.path.isabs(path):
         path = os.path.join(ROOT, path)
     d = os.path.dirname(path)
     if d: os.makedirs(d, exist_ok=True)
     with open(path, "w") as f: f.write(content)
     if path.endswith(".py"): _check_syntax(path)
-    _commit(f"write {os.path.basename(path)}")
     return f"wrote {path}"
 
 def edit_file(path: str, old_text: str, new_text: str) -> str:
@@ -42,7 +41,6 @@ def edit_file(path: str, old_text: str, new_text: str) -> str:
     if old_text not in content: raise ValueError(f"text not found in {path}")
     with open(path, "w") as f: f.write(content.replace(old_text, new_text, 1))
     if path.endswith(".py"): _check_syntax(path)
-    _commit(f"edit {os.path.basename(path)}")
     return f"edited {path}"
 
 def shell_exec(command: str, timeout: int = 30) -> str:
@@ -63,18 +61,13 @@ def restart():
 # ─── Internal helpers (not exposed as tools) ─────────────────────
 
 def _check_syntax(path):
-    """Validate Python syntax. Reverts and raises if broken."""
+    """Validate Python syntax. Reverts file from git if broken."""
     import ast
     try:
         with open(path) as f: ast.parse(f.read())
     except SyntaxError as e:
         subprocess.run(["git", "checkout", "--", path], capture_output=True, cwd=ROOT)
         raise ValueError(f"syntax error in {path} line {e.lineno}: {e.msg}. File reverted.")
-
-def _commit(msg):
-    """Auto-commit after file changes. Excludes logs."""
-    subprocess.run(f'git add -A -- . ":!transcript.log" ":!crash.log" && git commit -m {json.dumps(msg)} -q',
-                   shell=True, capture_output=True, cwd=ROOT)
 
 # ─── Tool registry ───────────────────────────────────────────────
 # To add a tool: define the function above, then add an entry here.
