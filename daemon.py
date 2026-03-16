@@ -15,6 +15,8 @@ RESTART_CODE = 42
 CRASH_WINDOW = 10
 TICK_INTERVAL = 60
 IDLE_TIMEOUT = 90
+MAX_RAPID_RESTARTS = 5       # max restarts within RAPID_RESTART_WINDOW
+RAPID_RESTART_WINDOW = 30    # seconds — if N restarts happen this fast, it's a loop
 
 # ─── Stats engine ────────────────────────────────────────────────
 
@@ -489,10 +491,37 @@ def main(scr):
         except Exception: return float("inf")
 
     def core_is_valid():
+        """Check core.py for syntax errors AND dangerous module-level patterns."""
+        core_path = os.path.join(root, "core.py")
+        # 1. Syntax check
         r = subprocess.run([sys.executable, "-c",
-            f"import ast; ast.parse(open('{os.path.join(root, 'core.py')}').read())"],
+            f"import ast; ast.parse(open('{core_path}').read())"],
             capture_output=True, text=True, timeout=5)
-        return r.returncode == 0
+        if r.returncode != 0:
+            return False
+        # 2. Detect module-level restart/exit calls (outside def/class blocks)
+        #    This catches the "tools.restart() at top level" pattern
+        try:
+            import ast as _ast
+            with open(core_path) as f:
+                tree = _ast.parse(f.read())
+            for node in tree.body:
+                # Allow imports, assignments, function/class defs, comments
+                if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef,
+                                     _ast.ClassDef, _ast.Import, _ast.ImportFrom,
+                                     _ast.Assign, _ast.AnnAssign, _ast.AugAssign,
+                                     _ast.If, _ast.Constant)):
+                    continue
+                # Flag module-level expressions that call restart/exit/sys.exit
+                if isinstance(node, _ast.Expr) and isinstance(node.value, _ast.Call):
+                    call_src = _ast.dump(node.value.func)
+                    if any(danger in call_src for danger in
+                           ["restart", "exit", "sys.exit", "os._exit"]):
+                        out(f"  ⚠ blocked: module-level {call_src} in core.py", style="dim")
+                        return False
+        except Exception:
+            pass  # If AST analysis fails, let syntax check result stand
+        return True
 
     def verbose_tail():
         """Tail the transcript file and display new lines."""
@@ -632,30 +661,58 @@ def main(scr):
     threading.Thread(target=input_loop, daemon=True).start()
 
     def agent_loop():
+        restart_times = []  # timestamps of recent restarts (for rate limiting)
+
+        def _record_restart():
+            """Track restart timestamps; return True if we're in a rapid loop."""
+            now = time.time()
+            restart_times.append(now)
+            # Trim old entries outside the window
+            cutoff = now - RAPID_RESTART_WINDOW
+            while restart_times and restart_times[0] < cutoff:
+                restart_times.pop(0)
+            return len(restart_times) >= MAX_RAPID_RESTARTS
+
+        def _rollback(reason=""):
+            """Roll back the last commit and chown."""
+            if reason:
+                out(f"  {reason}", style="dim")
+            subprocess.run(["git", "reset", "--hard", "HEAD~1"], cwd=root, capture_output=True)
+            if not core_is_valid():
+                out("  still broken after rollback, restoring initial core.py", style="dim")
+                subprocess.run(["git", "checkout", "$(git rev-list --max-parents=0 HEAD)", "--", "core.py"],
+                              shell=True, cwd=root, capture_output=True)
+            subprocess.run(["chown", "-R", "agent:agent", root], capture_output=True)
+
         while True:
             if not core_is_valid():
-                out("  core.py has syntax errors, rolling back", style="dim")
-                subprocess.run(["git", "reset", "--hard", "HEAD~1"], cwd=root, capture_output=True)
-                if not core_is_valid():
-                    out("  still broken after rollback", style="dim")
-                    subprocess.run(["git", "checkout", "$(git rev-list --max-parents=0 HEAD)", "--", "core.py"],
-                                  shell=True, cwd=root, capture_output=True)
-                subprocess.run(["chown", "-R", "agent:agent", root], capture_output=True)
+                _rollback("core.py failed validation, rolling back")
                 continue
 
             code = run_agent()
             if last_exit[0] != "idle":
                 last_exit[0] = code
             if code == RESTART_CODE:
-                out("  🔄 restarting...", style="dim")
+                is_loop = _record_restart()
+                if is_loop:
+                    out(f"  ⚠ restart loop detected ({MAX_RAPID_RESTARTS} restarts in {RAPID_RESTART_WINDOW}s), rolling back", style="dim")
+                    _rollback()
+                    restart_times.clear()
+                    time.sleep(3)
+                else:
+                    out("  🔄 restarting...", style="dim")
                 continue
             if code == 0:
                 out("  clean exit", style="dim")
                 break
-            if last_commit_age() < CRASH_WINDOW:
-                out("  crash after self-edit, rolling back", style="dim")
-                subprocess.run(["git", "reset", "--hard", "HEAD~1"], cwd=root, capture_output=True)
-                subprocess.run(["chown", "-R", "agent:agent", root], capture_output=True)
+            # Non-restart crash
+            if _record_restart():
+                out(f"  ⚠ rapid crash loop detected, rolling back", style="dim")
+                _rollback()
+                restart_times.clear()
+                time.sleep(3)
+            elif last_commit_age() < CRASH_WINDOW:
+                _rollback("crash after self-edit, rolling back")
             out(f"  crashed (exit {code}), restarting in 2s", style="dim")
             time.sleep(2)
     threading.Thread(target=agent_loop, daemon=True).start()
