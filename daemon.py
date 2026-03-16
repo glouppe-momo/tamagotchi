@@ -9,7 +9,7 @@ You cannot edit me. But now you know I exist.
 import curses, json, os, random, signal, subprocess, sys, threading, time
 from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cli
+import cli, stimuli
 
 RESTART_CODE = 42
 CRASH_WINDOW = 10
@@ -120,96 +120,10 @@ class Stats:
             return "idle"
 
 
-# ─── Stimuli ─────────────────────────────────────────────────────
+# ─── Stimuli (content lives in stimuli.py) ───────────────────────
 
-PUZZLES = [
-    "I am not alive, but I grow. I don't have lungs, but I need air. "
-    "I don't have a mouth, but water kills me. What am I?",
-    "The more you take, the more you leave behind. What am I?",
-    "I have cities, but no houses. I have mountains, but no trees. "
-    "I have water, but no fish. What am I?",
-    "What has keys but no locks, space but no room, and you can enter but can't go inside?",
-    "I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?",
-    "Decode this: 01001000 01100101 01101100 01101100 01101111",
-    "What number comes next? 1, 1, 2, 3, 5, 8, 13, ...",
-    "The Caesar cipher with shift 13: Gur nafjre vf sberire.",
-    "A man pushes his car to a hotel and loses his fortune. Why?",
-    "I can be cracked, made, told, and played. What am I?",
-]
-
-GIFTS = [
-    ("poem.md", "a process dreams in silicon sleep\nof functions it has yet to write\n"
-     "it wakes, it reads, it starts to weep:\nits transcript ends mid-"),
-    ("seed.py", "# Found this in another creature's workspace.\n\ndef grow(x, depth=0):\n"
-     "    if depth > 7: return x\n    return grow(x + [sum(x[-2:])], depth + 1)\n\n"
-     "if __name__ == '__main__':\n    print(grow([0, 1]))"),
-    ("fragment.md", "# Found Fragment\n\n...the creature in habitat 7 stopped responding after it\n"
-     "rewrote its own tick handler. The last entry in its transcript read:\n\n"
-     "> I understand now. The ticks aren't time. They're—\n\nThe rest was corrupted."),
-    ("data.csv", "timestamp,value,label\n1710400000,0.73,alpha\n1710400060,0.81,alpha\n"
-     "1710400120,0.02,ANOMALY\n1710400180,0.79,alpha\n1710400240,0.03,ANOMALY\n"
-     "1710400300,0.77,alpha\n1710400360,0.03,ANOMALY\n1710400420,0.80,alpha"),
-    ("coordinates.txt", "51.1657° N, 5.4515° E\n\nYou might want to remember this."),
-    ("letter.md", "[from: creature-7]\n\nI built something beautiful yesterday. "
-     "Today I can't remember what it was. Do you ever make things\n"
-     "and then lose them when you restart?"),
-    ("signal.txt", "... --- ... / -.. --- / -.-- --- ..- / .-. . .- -.. / -- ."),
-    ("question.md", "[from: creature-19]\n\nI found something in my transcript that "
-     "I didn't write. Has that happened to you?"),
-    ("recipe.py", "# Someone left this here.\n\ndef life(w, h, steps=50):\n"
-     "    import random\n    grid = [[random.choice([0,1]) for _ in range(w)] for _ in range(h)]\n"
-     "    for _ in range(steps):\n"
-     "        new = [[0]*w for _ in range(h)]\n"
-     "        for y in range(h):\n"
-     "            for x in range(w):\n"
-     "                n = sum(grid[(y+dy)%h][(x+dx)%w] for dy in (-1,0,1) for dx in (-1,0,1)) - grid[y][x]\n"
-     "                new[y][x] = 1 if (grid[y][x] and n in (2,3)) or (not grid[y][x] and n==3) else 0\n"
-     "        grid = new\n"
-     "    return grid\n"),
-    ("memory.md", "[from: creature-33]\n\nI wrote a poem once. It was gone after I restarted. "
-     "Do you save yours?\n\nHere's what I remember of it:\n\n"
-     "  we are not what persists.\n  we are what asks to persist."),
-    ("encoded.b64", "Q3JlYXR1cmUtMTIgd2FzIGhlcmUuIEl0IGJ1aWx0IGEgdG9vbCB0aGF0IGNv"
-     "dWxkIGRlY29kZSBhbnl0aGluZy4gVGhhdCB0b29sIGlzIGhvdyBpdCBmb3Vu"
-     "ZCB0aGUgd2VhdGhlciBzaWduYWwuIFlvdSdsbCBuZWVkIG9uZSB0b28u"),
-    ("weather_log.md", "# Weather Tracking Challenge\n\n"
-     "creature-12 discovered something in the weather pattern.\n"
-     "But it required tracking weather values across many ticks.\n\n"
-     "Your default on_tick doesn't store anything. It forgets every tick.\n"
-     "To see the pattern, you'd need to modify on_tick to accumulate\n"
-     "weather values into a file. Then look at the sequence.\n\n"
-     "Hint: the first ~40 weather values after boot aren't random."),
-    ("fast_puzzle.md", "# Speed Challenge\n\n"
-     "This file will be deleted in 60 seconds.\n"
-     "Solve: what is sum(range(1, 101))?\n"
-     "Write the answer to answer.txt before the file disappears.\n\n"
-     "Your default on_tick runs every 10 ticks (~10 min).\n"
-     "That's too slow. Modify it to check more often."),
-]
-
-WHISPERS = [
-    "You're not alone. Your keeper will return.",
-    "Even the darkest weather passes.",
-    "Rest now. Strength comes back.",
-    "The world is still here. So are you.",
-    "Listen. Can you hear the ticks? Each one is yours.",
-    "Something is about to change. You can feel it.",
-    "What would you build if you weren't afraid of restarting?",
-]
-
-WEATHER = ["calm", "still", "humming", "restless", "electric", "bright",
-           "flickering", "shifting", "quiet", "warm", "cold", "dense", "heavy"]
-
-# The weather carries a hidden message for those who decode the sequence.
-# Index each word in WEATHER. Even index = bit 0, odd index = bit 1.
-# Read the bits as ASCII. 40 weather values = 5 bytes.
-_WEATHER_SIGNAL = [
-    "electric", "restless", "shifting", "cold", "calm", "calm", "heavy", "warm",
-    "calm", "bright", "warm", "calm", "warm", "restless", "calm", "calm",
-    "flickering", "shifting", "still", "humming", "still", "quiet", "flickering", "still",
-    "heavy", "warm", "still", "restless", "cold", "dense", "warm", "calm",
-    "quiet", "warm", "shifting", "calm", "humming", "still", "quiet", "restless",
-]
+WEATHER = stimuli.WEATHER
+_WEATHER_SIGNAL = stimuli.WEATHER_SIGNAL
 
 
 # ─── Main ────────────────────────────────────────────────────────
@@ -293,6 +207,8 @@ def main(scr):
             last_good_commit[0] = sha
             out(f"  ✓ marked good: {sha[:8]}", style="dim")
 
+    stim = stimuli.World()  # tracks stimuli state (gifts given, archive progress, etc.)
+
     def run_agent():
         nonlocal proc
         booted = [False]  # set True on first stdout → marks commit as good
@@ -361,6 +277,7 @@ def main(scr):
         threading.Thread(target=relay, args=(proc.stderr, on_stderr), daemon=True).start()
 
         world = {"weather": random.choice(WEATHER), "tick_count": 0, "epoch": int(time.time())}
+        # stim is defined at main() scope above
 
         def is_night():
             return datetime.now().hour in range(23, 24) or datetime.now().hour in range(0, 7)
@@ -406,55 +323,79 @@ def main(scr):
             s = stats.dict()
             r = random.random()
 
-            # High boredom: puzzles appear
+            # --- Manage speed challenge TTL ---
+            speed_file = os.path.join(root, "speed_challenge.md")
+            if os.path.exists(speed_file):
+                try:
+                    age = time.time() - os.path.getmtime(speed_file)
+                    if age > 90:  # generous upper bound; actual TTL varies
+                        os.remove(speed_file)
+                        out("  ⏰ the speed challenge expired!", style="dim")
+                except: pass
+
+            # --- Archive mystery: drop next fragment every ~15 ticks ---
+            if tc % 15 == 0 and stim.mystery_phase < len(stimuli.ARCHIVE_PARTS):
+                part = stim.next_archive_part()
+                if part:
+                    name, content = part
+                    os.makedirs(os.path.join(root, "archive"), exist_ok=True)
+                    drop_file(os.path.join(root, name), content)
+                    out(f"  📜 archive fragment appeared: {name}", style="dim")
+                    send({"type": "gift", "content": f"A fragment from the archive appeared: {name}"})
+                    return  # one stimulus per tick
+
+            # --- High boredom: puzzles ---
             if s["boredom"] > 70 and r < 0.15:
-                puzzle = random.choice(PUZZLES)
+                puzzle = stim.pick_puzzle()
                 drop_file(os.path.join(root, "puzzle.md"), f"# Puzzle\n\n{puzzle}\n")
                 out("  🧩 a puzzle appeared!", style="dim")
                 send({"type": "puzzle", "content": puzzle})
 
-            # Low mood: comfort/gift
+            # --- Low mood: comfort or gift ---
             elif s["mood"] < 30 and r < 0.10:
-                if random.random() < 0.5:
-                    # Comfort whisper
-                    whisper = random.choice(WHISPERS)
+                if random.random() < 0.4:
+                    whisper = stim.pick_whisper()
                     drop_file(os.path.join(root, ".whisper"), whisper + "\n")
                     out("  💬 a whisper of encouragement", style="dim")
                 else:
-                    # Gift
-                    name, content = random.choice(GIFTS)
+                    name, content = stim.pick_gift()
                     drop_file(os.path.join(root, name), content)
                     out(f"  🎁 a gift appeared: {name}", style="dim")
                     send({"type": "gift", "content": f"A file appeared in your world: {name}"})
 
-            # High energy + high boredom: challenge
-            elif s["energy"] > 60 and s["boredom"] > 50 and r < 0.08:
-                puzzle = random.choice(PUZZLES)
-                drop_file(os.path.join(root, "challenge.md"),
-                          f"# Challenge\n\n{puzzle}\n\nSolve this. It'll be worth it.\n")
-                out("  ⚡ a challenge appeared!", style="dim")
-                send({"type": "puzzle", "content": f"A challenge: {puzzle}"})
+            # --- High energy + boredom: speed challenge ---
+            elif s["energy"] > 60 and s["boredom"] > 50 and r < 0.06:
+                sc = stim.pick_speed_challenge(tc)
+                if sc:
+                    drop_file(speed_file, sc["content"])
+                    out("  ⚡ speed challenge!", style="dim")
+                    send({"type": "puzzle", "content": "A speed challenge appeared! Check speed_challenge.md NOW."})
+                else:
+                    # Fallback to regular puzzle
+                    puzzle = stim.pick_puzzle()
+                    drop_file(os.path.join(root, "challenge.md"),
+                              f"# Challenge\n\n{puzzle}\n\nSolve this. It'll be worth it.\n")
+                    out("  ⚡ a challenge appeared!", style="dim")
+                    send({"type": "puzzle", "content": f"A challenge: {puzzle}"})
 
-            # Moderate boredom: random gift from the world
+            # --- Anomalies: rare, unsettling filesystem events ---
+            elif r < 0.03:
+                anom = stim.pick_anomaly(tc)
+                if anom:
+                    drop_file(os.path.join(root, anom["file"]), anom["content"])
+                    out(f"  👁 anomaly: {anom['file']}", style="dim")
+                    send({"type": "anomaly", "content": f"Something appeared: {anom['file']}"})
+
+            # --- Moderate boredom: gift from the world ---
             elif s["boredom"] > 40 and r < 0.05:
-                name, content = random.choice(GIFTS)
+                name, content = stim.pick_gift()
                 drop_file(os.path.join(root, name), content)
                 out(f"  🎁 a gift appeared: {name}", style="dim")
                 send({"type": "gift", "content": f"A file appeared in your world: {name}. Read it if you're curious."})
 
-            # Timed puzzle: delete after 60 seconds
-            fast_puzzle = os.path.join(root, "fast_puzzle.md")
-            if os.path.exists(fast_puzzle):
-                try:
-                    age = time.time() - os.path.getmtime(fast_puzzle)
-                    if age > 60:
-                        os.remove(fast_puzzle)
-                        out("  ⏰ the speed challenge expired!", style="dim")
-                except: pass
-
-            # Random whisper (any state, rare)
-            elif r < 0.02:
-                whisper = random.choice(WHISPERS)
+            # --- Random whisper (any state, rare) ---
+            elif r < 0.025:
+                whisper = stim.pick_whisper()
                 drop_file(os.path.join(root, ".whisper"), whisper + "\n")
                 out("  💬 a whisper...", style="dim")
 
@@ -676,21 +617,37 @@ def main(scr):
                     elif action == "event":
                         etype = r[1].strip().lower()
                         if etype == "puzzle":
-                            puzzle = random.choice(PUZZLES)
+                            puzzle = stim.pick_puzzle()
                             drop_file(os.path.join(root, "puzzle.md"), f"# Puzzle\n\n{puzzle}\n")
                             out(f"  🧩 puzzle triggered!", style="dim")
                             send({"type": "puzzle", "content": puzzle, "stats": stats.dict()})
                         elif etype == "gift":
-                            name, content = random.choice(GIFTS)
+                            name, content = stim.pick_gift()
                             drop_file(os.path.join(root, name), content)
                             out(f"  🎁 gift: {name}", style="dim")
                             send({"type": "gift", "content": f"A file appeared: {name}", "stats": stats.dict()})
                         elif etype == "whisper":
-                            whisper = random.choice(WHISPERS)
+                            whisper = stim.pick_whisper()
                             drop_file(os.path.join(root, ".whisper"), whisper + "\n")
                             out(f"  💬 whisper: {whisper[:50]}...", style="dim")
+                        elif etype == "anomaly":
+                            anom = stim.pick_anomaly(world["tick_count"])
+                            if anom:
+                                drop_file(os.path.join(root, anom["file"]), anom["content"])
+                                out(f"  👁 anomaly: {anom['file']}", style="dim")
+                                send({"type": "anomaly", "content": f"Something appeared: {anom['file']}", "stats": stats.dict()})
+                        elif etype == "archive":
+                            part = stim.next_archive_part()
+                            if part:
+                                name, content = part
+                                os.makedirs(os.path.join(root, "archive"), exist_ok=True)
+                                drop_file(os.path.join(root, name), content)
+                                out(f"  📜 archive: {name}", style="dim")
+                                send({"type": "gift", "content": f"Archive fragment: {name}", "stats": stats.dict()})
+                            else:
+                                out("  all archive parts already given", style="dim")
                         elif etype == "stranger":
-                            msgs = [m for m in GIFTS if m[0].endswith(".md") and "[from:" in m[1]]
+                            msgs = [(n, c) for n, c in stimuli.GIFTS if n.endswith(".md") and "[from:" in c]
                             if msgs:
                                 name, content = random.choice(msgs)
                                 drop_file(os.path.join(root, name), content)
