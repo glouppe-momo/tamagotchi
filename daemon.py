@@ -266,8 +266,36 @@ def main(scr):
         cli.set_stats(stats.dict())
         cli.set_state(stats.state_label())
 
+    last_good_commit = [None]  # SHA of last commit where creature ran successfully
+
+    def _get_head():
+        """Get current HEAD SHA."""
+        try:
+            r = subprocess.run(["git", "rev-parse", "HEAD"],
+                               capture_output=True, text=True, cwd=root, timeout=5)
+            return r.stdout.strip()
+        except Exception:
+            return None
+
+    def _get_initial_commit():
+        """Get the very first commit (original spawn state)."""
+        try:
+            r = subprocess.run(["git", "rev-list", "--max-parents=0", "HEAD"],
+                               capture_output=True, text=True, cwd=root, timeout=5)
+            return r.stdout.strip().splitlines()[0]
+        except Exception:
+            return None
+
+    def _mark_good():
+        """Mark current HEAD as last known good state."""
+        sha = _get_head()
+        if sha:
+            last_good_commit[0] = sha
+            out(f"  ✓ marked good: {sha[:8]}", style="dim")
+
     def run_agent():
         nonlocal proc
+        booted = [False]  # set True on first stdout → marks commit as good
         was_active[0] = False
         last_activity[0] = time.time()
         env = os.environ.copy()
@@ -298,6 +326,9 @@ def main(scr):
 
         def on_stdout(text):
             touch()
+            if not booted[0]:
+                booted[0] = True
+                _mark_good()
             # Parse creature action signals
             if text.startswith("[action:"):
                 action_str = text[8:].rstrip("]")
@@ -703,22 +734,39 @@ def main(scr):
             """Track restart timestamps; return True if we're in a rapid loop."""
             now = time.time()
             restart_times.append(now)
-            # Trim old entries outside the window
             cutoff = now - RAPID_RESTART_WINDOW
             while restart_times and restart_times[0] < cutoff:
                 restart_times.pop(0)
             return len(restart_times) >= MAX_RAPID_RESTARTS
 
         def _rollback(reason=""):
-            """Roll back the last commit and chown."""
+            """Roll back to last known good commit, or initial if none."""
             if reason:
                 out(f"  {reason}", style="dim")
-            subprocess.run(["git", "reset", "--hard", "HEAD~1"], cwd=root, capture_output=True)
+            target = last_good_commit[0] or _get_initial_commit()
+            current = _get_head()
+            if target and target != current:
+                out(f"  ↩ rolling back to {target[:8]}", style="dim")
+                subprocess.run(["git", "reset", "--hard", target],
+                               cwd=root, capture_output=True)
+            else:
+                # Fallback: just go back one
+                out(f"  ↩ rolling back HEAD~1", style="dim")
+                subprocess.run(["git", "reset", "--hard", "HEAD~1"],
+                               cwd=root, capture_output=True)
+            # Last resort: if still broken, restore core.py from initial commit
             if not core_is_valid():
-                out("  still broken after rollback, restoring initial core.py", style="dim")
-                subprocess.run(["git", "checkout", "$(git rev-list --max-parents=0 HEAD)", "--", "core.py"],
-                              shell=True, cwd=root, capture_output=True)
+                initial = _get_initial_commit()
+                if initial:
+                    out("  still broken, restoring initial core.py", style="dim")
+                    subprocess.run(["git", "checkout", initial, "--", "core.py", "tools.py"],
+                                   cwd=root, capture_output=True)
+                    subprocess.run(["git", "commit", "-m", "daemon: restore initial core.py+tools.py", "-q"],
+                                   cwd=root, capture_output=True)
             subprocess.run(["chown", "-R", "agent:agent", root], capture_output=True)
+
+        # Mark initial state as good
+        _mark_good()
 
         while True:
             if not core_is_valid():
