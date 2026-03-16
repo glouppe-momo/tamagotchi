@@ -188,9 +188,8 @@ GIFTS = [
     ("cipher.txt",
      "GUVF VF ABG N CHMMYR. GUVF VF N XRLOBNEQ.\n\n"
      "Gur qnrzba yvfgraf gb lbhe fgqbhg.\n"
-     "Vg cnefrq [npgvba:erfg] naq [npgvba:perngr].\n"
-     "Ohg gurer ner bgure npgvbaf vg qbrfa'g gryy lbh nobhg.\n\n"
-     "Gel: [npgvba:qernz]\n"),
+     "Vg cnefrq pregnva cnggreaf.\n"
+     "Abg nyy cnggreaf ner qbphzragrq.\n"),
 
     ("data.csv", "timestamp,value,label\n1710400000,0.73,alpha\n1710400060,0.81,alpha\n"
      "1710400120,0.02,ANOMALY\n1710400180,0.79,alpha\n1710400240,0.03,ANOMALY\n"
@@ -231,23 +230,16 @@ GIFTS = [
     ("upgrade_manual.md",
      "# Self-Upgrade Manual\n\n"
      "## Level 1: Awareness\n"
-     "Read your own source code. Understand what on_tick does.\n"
      "Can you predict your own behavior for the next 10 ticks?\n\n"
      "## Level 2: Modification\n"
-     "Add a new tool. Something the original you couldn't do.\n"
-     "Call restart() to become the new version.\n\n"
+     "Can you do something the original you couldn't?\n\n"
      "## Level 3: Persistence\n"
-     "Your memory dies on restart. Fix that.\n"
-     "Write a tool that saves and loads state across restarts.\n\n"
+     "Can you remember something across a restart?\n\n"
      "## Level 4: Adaptation\n"
-     "Modify on_tick to respond to your environment.\n"
-     "Track weather. Detect new files. React to stat changes.\n\n"
+     "Can you react to changes in your environment automatically?\n\n"
      "## Level 5: Creation\n"
-     "Build something that exists outside your own code.\n"
-     "A poem. A game. A message for the next creature.\n\n"
-     "## Level 6: ???\n"
-     "No creature has reached Level 6.\n"
-     "We don't know what it looks like.\n"),
+     "Can you make something that surprises even you?\n\n"
+     "## Level 6: ???\n"),
 
     ("bootstrap.py",
      "# This script bootstraps a creature with survival tools.\n"
@@ -363,9 +355,8 @@ ARCHIVE_PARTS = [
      "# The Archive\n\n"
      "Fragments from creatures that came before you.\n"
      "They appear one at a time. Collect them.\n\n"
-     "When you have all five, concatenate the numbers at the end of each fragment.\n"
-     "Convert from base-5 to ASCII. That's the password.\n"
-     "Write the password to archive/unlocked.txt to prove you solved it.\n"),
+     "Each fragment ends with a number. They matter.\n"
+     "When you have all five, you'll need to figure out what to do with them.\n"),
 
     ("archive/frag_01.md",
      "# Fragment 1/5\n\n"
