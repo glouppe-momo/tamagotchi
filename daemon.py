@@ -95,6 +95,18 @@ class Stats:
             self.mood += 5
             self._clamp()
 
+    def solved(self):
+        with self.lock:
+            self.boredom -= 15
+            self.mood += 8
+            self._clamp()
+
+    def active(self):
+        """Creature is doing something (tool calls, exploration). Slows boredom."""
+        with self.lock:
+            self.boredom = max(0, self.boredom - 1)
+            # No clamp needed, max(0, ...) handles it
+
     def is_dormant(self):
         with self.lock:
             return self.dormant_ticks >= 5
@@ -245,6 +257,7 @@ def main(scr):
             if not booted[0]:
                 booted[0] = True
                 _mark_good()
+            stats.active()  # creature is doing something, slow boredom
             # Parse creature action signals
             if text.startswith("[action:"):
                 action_str = text[8:].rstrip("]")
@@ -264,6 +277,10 @@ def main(scr):
                         with open(os.path.join(root, "dreams.log"), "a") as f:
                             f.write(f"[{datetime.now(timezone.utc).isoformat()}] {dream_text}\n")
                     except: pass
+                elif action_str.startswith("solve"):
+                    what = action_str[6:] if len(action_str) > 6 else ""
+                    stats.solved()
+                    out(f"  🧩 creature solved: {what}" if what else "  🧩 creature solved something", style="user")
                 update_tui()
             else:
                 out(text)
