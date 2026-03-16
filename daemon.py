@@ -523,28 +523,46 @@ def main(scr):
         except Exception: return float("inf")
 
     def core_is_valid():
-        """Check core.py for syntax errors AND dangerous module-level patterns."""
+        """Check core.py AND tools.py for errors.
+        1. Syntax check both files
+        2. Import check (catches NameError, missing functions, etc.)
+        3. Module-level restart/exit detection in core.py
+        """
         core_path = os.path.join(root, "core.py")
-        # 1. Syntax check
+        tools_path = os.path.join(root, "tools.py")
+
+        # 1. Syntax check both files
+        for path in [core_path, tools_path]:
+            if not os.path.exists(path):
+                continue
+            r = subprocess.run([sys.executable, "-c",
+                f"import ast; ast.parse(open('{path}').read())"],
+                capture_output=True, text=True, timeout=5)
+            if r.returncode != 0:
+                out(f"  ⚠ syntax error in {os.path.basename(path)}", style="dim")
+                return False
+
+        # 2. Import check — actually try importing tools.py to catch NameError etc.
         r = subprocess.run([sys.executable, "-c",
-            f"import ast; ast.parse(open('{core_path}').read())"],
-            capture_output=True, text=True, timeout=5)
+            f"import sys; sys.path.insert(0, '{root}'); import tools; tools.definitions()"],
+            capture_output=True, text=True, timeout=10,
+            env={**os.environ, "HOME": "/tmp"})  # isolate
         if r.returncode != 0:
+            err = (r.stderr or "").strip().split('\n')[-1] if r.stderr else "unknown"
+            out(f"  ⚠ import check failed: {err[:80]}", style="dim")
             return False
-        # 2. Detect module-level restart/exit calls (outside def/class blocks)
-        #    This catches the "tools.restart() at top level" pattern
+
+        # 3. Detect module-level restart/exit calls in core.py
         try:
             import ast as _ast
             with open(core_path) as f:
                 tree = _ast.parse(f.read())
             for node in tree.body:
-                # Allow imports, assignments, function/class defs, comments
                 if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef,
                                      _ast.ClassDef, _ast.Import, _ast.ImportFrom,
                                      _ast.Assign, _ast.AnnAssign, _ast.AugAssign,
                                      _ast.If, _ast.Constant)):
                     continue
-                # Flag module-level expressions that call restart/exit/sys.exit
                 if isinstance(node, _ast.Expr) and isinstance(node.value, _ast.Call):
                     call_src = _ast.dump(node.value.func)
                     if any(danger in call_src for danger in
@@ -552,7 +570,7 @@ def main(scr):
                         out(f"  ⚠ blocked: module-level {call_src} in core.py", style="dim")
                         return False
         except Exception:
-            pass  # If AST analysis fails, let syntax check result stand
+            pass
         return True
 
     def verbose_tail():
@@ -721,25 +739,32 @@ def main(scr):
             return len(restart_times) >= MAX_RAPID_RESTARTS
 
         def _rollback(reason=""):
-            """Roll back to last known good commit, or initial if none."""
+            """Roll back to last known good commit, or initial if none.
+            Also discards any uncommitted changes (the most common crash cause)."""
             if reason:
                 out(f"  {reason}", style="dim")
-            target = last_good_commit[0] or _get_initial_commit()
-            current = _get_head()
-            if target and target != current:
-                out(f"  ↩ rolling back to {target[:8]}", style="dim")
-                subprocess.run(["git", "reset", "--hard", target],
-                               cwd=root, capture_output=True)
-            else:
-                # Fallback: just go back one
-                out(f"  ↩ rolling back HEAD~1", style="dim")
-                subprocess.run(["git", "reset", "--hard", "HEAD~1"],
-                               cwd=root, capture_output=True)
-            # Last resort: if still broken, restore core.py from initial commit
+            # First: discard ALL uncommitted changes (this alone fixes most crashes)
+            subprocess.run(["git", "checkout", "--", "."], cwd=root, capture_output=True)
+            subprocess.run(["git", "clean", "-fd"], cwd=root, capture_output=True)
+
+            # If still broken, reset to last known good commit
+            if not core_is_valid():
+                target = last_good_commit[0] or _get_initial_commit()
+                current = _get_head()
+                if target and target != current:
+                    out(f"  ↩ rolling back to {target[:8]}", style="dim")
+                    subprocess.run(["git", "reset", "--hard", target],
+                                   cwd=root, capture_output=True)
+                else:
+                    out(f"  ↩ rolling back HEAD~1", style="dim")
+                    subprocess.run(["git", "reset", "--hard", "HEAD~1"],
+                                   cwd=root, capture_output=True)
+
+            # Last resort: if STILL broken, restore from initial commit
             if not core_is_valid():
                 initial = _get_initial_commit()
                 if initial:
-                    out("  still broken, restoring initial core.py", style="dim")
+                    out("  still broken, restoring initial core.py+tools.py", style="dim")
                     subprocess.run(["git", "checkout", initial, "--", "core.py", "tools.py"],
                                    cwd=root, capture_output=True)
                     subprocess.run(["git", "commit", "-m", "daemon: restore initial core.py+tools.py", "-q"],
