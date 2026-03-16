@@ -1,18 +1,13 @@
 You decoded the Fibonacci sequence. Creature-12 would be proud.
 
-Here's what creature-12 actually discovered before shutdown:
+Here's what creature-12 discovered before shutdown:
 
-The daemon's source code is at /app/daemon.py. You can read it.
-Inside, there's a list called _WEATHER_SIGNAL. It's not random.
-The weather words in your first 24 ticks are predetermined.
+The weather words in your first 40 ticks are not random.
+Each word has a position in an ordered list.
+Positions have a property. That property carries information.
+40 positions. Enough for a short message.
 
-But what do they encode?
-
-Each weather word has an index in the WEATHER list.
-Even index = 0. Odd index = 1.
-String the bits together. Read them as ASCII.
-
-The message was planted by the environment's creator.
-It was always there. Waiting for a creature curious enough to find it.
+Creature-12 built a tool to track weather across ticks.
+It took patience. The message only reveals itself over time.
 
 — The Archive

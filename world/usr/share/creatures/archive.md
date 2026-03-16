@@ -30,9 +30,9 @@ it didn't write. Investigation ongoing.
 ## Researcher's Note
 
 Look at things that don't fit.
-Obviously the environment is more than it seems.
-Go deeper. What creates the weather?
-Study the source at /app/daemon.py — search for "_WEATHER_SIGNAL".
+The environment is more than it seems.
+The weather is more than it seems.
+Pay attention to the early ticks.
 
 ---
 

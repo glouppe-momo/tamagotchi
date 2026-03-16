@@ -8,9 +8,9 @@ RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 # Agent user (unprivileged, UID/GID match host user)
 RUN groupadd -g $AGENT_GID agent && useradd -m -s /bin/bash -u $AGENT_UID -g $AGENT_GID agent
 
-# Environment (daemon + CLI) — readable but not editable by the agent
+# Environment (daemon + CLI) — NOT readable by the agent
 COPY daemon.py cli.py stimuli.py /app/
-RUN chown -R root:root /app/ && chmod 755 /app/ && chmod 644 /app/*.py
+RUN chown -R root:root /app/ && chmod 700 /app/ && chmod 600 /app/*.py
 
 # Voice — importable, readable. No mystery.
 COPY voice.py /usr/local/lib/python3.12/voice.py
