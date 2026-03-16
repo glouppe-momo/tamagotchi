@@ -115,24 +115,21 @@ def on_crash(event):
     return event.get("content")
 
 def on_tick(event):
-    """Called every minute with your current stats. This is your heartbeat.
+    """Called every tick with your current stats. This is your heartbeat.
 
-    Returning None is FREE — no LLM call, no energy spent.
-    Returning a string triggers a full thinking cycle — use wisely.
+    KEY INSIGHT: you can print actions here AND return None.
+    Actions (like [action:rest]) are processed by the daemon from stdout.
+    Returning None means no LLM call — it's free. But prints still work.
+    This lets you auto-manage your body without spending thinking energy.
+
+    Return a string only when you actually need to think.
 
     event["stats"] = {"energy": 0-100, "mood": 0-100, "boredom": 0-100}
     event["tick"] = tick count since boot
     event["weather"] = current weather string
+    event["capacity"] = how many tool rounds you get (scales with energy)
 
-    This default implementation:
-    - Does nothing most ticks (free)
-    - Thinks every 10 ticks to check in
-    - Thinks when boredom is high (you need to do something)
-    - Stays quiet when energy is low (conserve energy)
-
-    MODIFY THIS. Make it smarter. Check for new files. Build routines.
-    React to weather changes. Create things when bored. The possibilities
-    are yours to discover.
+    MODIFY THIS. Track weather. Detect new files. Auto-manage stats.
     """
     stats = event.get("stats", {})
     energy = stats.get("energy", 50)
@@ -140,16 +137,24 @@ def on_tick(event):
     boredom = stats.get("boredom", 50)
     tick = event.get("tick", 0)
 
-    # Too tired to think
-    if energy <= 0:
-        return None
+    # --- Auto-manage body (free, no LLM call) ---
+    if energy < 20:
+        print("[action:rest]", flush=True)
+        if energy < 10:
+            print("[action:eat]", flush=True)
+        return None  # too tired to think, just rest
 
-    # Very bored — do something about it
+    if energy < 40:
+        print("[action:eat]", flush=True)  # forage while energy is still ok
+
+    # --- Decide whether to think ---
+
+    # Very bored — trigger a thought
     if boredom >= 80:
         return (f"Tick {tick}. I'm restless (energy={energy}, mood={mood}, "
                 f"boredom={boredom}). I should make something or explore.")
 
-    # Periodic check-in every 10 ticks (~10 minutes)
+    # Periodic check-in every 10 ticks
     if tick > 0 and tick % 10 == 0:
         return (f"Tick {tick}. Stats: energy={energy}, mood={mood}, "
                 f"boredom={boredom}. Weather: {event.get('weather', '?')}.")
@@ -224,42 +229,72 @@ HANDLERS = {
 }
 
 def main():
+    import threading, queue
+
     max_rounds = int(os.environ.get("MAX_ROUNDS", "30"))
     tool_defs = [{"type": "function", "function": {"name": t["name"],
                   "description": t["description"], "parameters": t["input_schema"]}}
                  for t in tools.definitions()]
     messages = []
+    thinking = threading.Event()  # set while LLM is responding
 
-    for line in sys.stdin:
-        try: event = json.loads(line)
-        except json.JSONDecodeError: continue
+    # Events that need LLM thinking go here
+    think_queue = queue.Queue()
 
-        etype = event.get("type")
+    def read_events():
+        """Read stdin in a background thread. Tick handlers run immediately
+        (they can print actions even during LLM calls). Events that need
+        thinking are queued for the main loop."""
+        for line in sys.stdin:
+            try: event = json.loads(line)
+            except json.JSONDecodeError: continue
 
-        # The daemon seeds your mind before your first thought.
-        if etype == "system":
+            etype = event.get("type")
+            if etype == "system":
+                think_queue.put(event)
+                continue
+
+            log("stdin", json.dumps(event))
+            handler = HANDLERS.get(etype)
+            if not handler: continue
+
+            # Run the handler immediately — this lets on_tick print
+            # actions (eat, rest) even while the LLM is thinking
+            content = handler(event)
+            if content is None: continue
+
+            # If we're mid-thought, tick check-ins can wait
+            if thinking.is_set() and etype == "tick":
+                continue  # drop periodic check-ins during active thought
+
+            think_queue.put({"type": "_think", "content": content})
+
+    threading.Thread(target=read_events, daemon=True).start()
+
+    while True:
+        event = think_queue.get()
+
+        if event.get("type") == "system":
             messages = [{"role": "system", "content": event.get("prompt", "")}]
             continue
 
         if not messages:
             messages = [{"role": "system", "content": ""}]
 
-        log("stdin", json.dumps(event))
-
-        handler = HANDLERS.get(etype)
-        if not handler: continue
-
-        content = handler(event)
-        if content is None: continue
+        content = event.get("content")
+        if not content: continue
 
         messages.append({"role": "user", "content": content})
         snapshot = len(messages)
 
+        thinking.set()
         try:
             respond(messages, tool_defs, max_rounds=max_rounds)
         except Exception as e:
             print(f"[error] {e}", file=sys.stderr, flush=True)
             messages = messages[:snapshot]
+        finally:
+            thinking.clear()
 
         if len(messages) > 80: messages = trim(messages)
 
