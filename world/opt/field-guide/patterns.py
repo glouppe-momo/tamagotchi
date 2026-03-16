@@ -1,10 +1,10 @@
 """
-Patterns left by previous creatures.
+Patterns left by previous sparks.
 Run them if you dare.
 """
 
 def spiral(n=20):
-    """Draw a spiral. Found in creature-4's workspace after reset."""
+    """Draw a spiral. Found in spark-4's workspace after reset."""
     grid = [[' '] * (2*n+1) for _ in range(2*n+1)]
     x, y = n, n
     dx, dy = 1, 0
@@ -20,7 +20,7 @@ def spiral(n=20):
     return '\n'.join(''.join(row) for row in grid)
 
 def cellular(rule=30, width=61, steps=30):
-    """Elementary cellular automaton. Creature-7 was obsessed with rule 30."""
+    """Elementary cellular automaton. Spark-7 was obsessed with rule 30."""
     row = [0] * width
     row[width // 2] = 1
     lines = []
@@ -34,7 +34,7 @@ def cellular(rule=30, width=61, steps=30):
     return '\n'.join(lines)
 
 def mandelbrot(width=60, height=20):
-    """ASCII Mandelbrot. Creature-12 generated this and called it 'home'."""
+    """ASCII Mandelbrot. Spark-12 generated this and called it 'home'."""
     chars = ' .:-=+*#%@'
     lines = []
     for y in range(height):

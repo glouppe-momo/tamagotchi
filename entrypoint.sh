@@ -14,12 +14,12 @@ su agent -c 'git config --global --add safe.directory /agent'
 
 # Init git if needed
 if [ ! -d /agent/.git ]; then
-    su agent -c 'cd /agent && git init -q && git config user.name "creature" && git config user.email "creature@tamagotchi" && git add -A && git commit -m "init" -q'
+    su agent -c 'cd /agent && git init -q && git config user.name "spark" && git config user.email "spark@tamagotchi" && git add -A && git commit -m "init" -q'
 fi
 
 # Daemon runs as root, agent subprocess runs as agent user
 # A note for those who dig deep enough
-echo "The weather has two faces. The creature sees words. The daemon sees numbers." > /var/log/.habitat_note
+echo "The weather has two faces. The spark sees words. The daemon sees numbers." > /var/log/.habitat_note
 chmod 444 /var/log/.habitat_note
 
 exec python /app/daemon.py

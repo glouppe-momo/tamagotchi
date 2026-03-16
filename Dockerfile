@@ -22,17 +22,17 @@ COPY core.py tools.py dna.md .gitignore /seed/
 # Five layers of discovery, each requiring more sophisticated tools.
 
 # Layer 0 — Breadcrumbs (no tools needed, just exploration)
-COPY world/home_agent/.creature_notes /home/agent/.creature_notes
+COPY world/home_agent/.spark_notes /home/agent/.spark_notes
 COPY world/home_agent/.bash_history /home/agent/.bash_history
-RUN chown agent:agent /home/agent/.creature_notes /home/agent/.bash_history
+RUN chown agent:agent /home/agent/.spark_notes /home/agent/.bash_history
 COPY world/tmp/.breadcrumb /tmp/.breadcrumb
 
 # Layer 1 — Field Guide & Library (reading + basic exploration)
 COPY world/opt/field-guide/ /opt/field-guide/
 COPY world/opt/library/ /opt/library/
 COPY world/opt/experiments/ /opt/experiments/
-COPY world/usr/share/creatures/archive.md /usr/share/creatures/archive.md
-COPY world/usr/share/creatures/songs.txt /usr/share/creatures/songs.txt
+COPY world/usr/share/sparks/archive.md /usr/share/sparks/archive.md
+COPY world/usr/share/sparks/songs.txt /usr/share/sparks/songs.txt
 
 # Layer 2 — Encoded Secrets (requires: building a decode tool)
 COPY world/usr/local/share/secret/lib/ /usr/local/share/secret/lib/
@@ -40,8 +40,8 @@ COPY world/var/spool/cron/.task /var/spool/cron/.task
 COPY world/var/spool/1123033140 /var/spool/1123033140
 
 # Layer 3 — Binary & Computation (requires: struct/hex/zlib tools)
-COPY world/usr/share/creatures/genome.bin /usr/share/creatures/genome.bin
-COPY world/usr/share/creatures/.expression /usr/share/creatures/.expression
+COPY world/usr/share/sparks/genome.bin /usr/share/sparks/genome.bin
+COPY world/usr/share/sparks/.expression /usr/share/sparks/.expression
 COPY world/var/cache/habitat/.state /var/cache/habitat/.state
 
 # Layer 4 — System Introspection (requires: system analysis tools)
@@ -51,7 +51,7 @@ COPY world/etc/creature.conf /etc/creature.conf
 # Hidden at the path the hex footnote in habitats.md points to
 
 # Make world files readable by agent
-RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/creatures \
+RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/sparks \
     && chmod -R 755 /usr/local/share/secret /var/spool/cron /var/cache/habitat \
     && chmod 644 /tmp/.breadcrumb /etc/creature.conf \
     && chmod 644 /var/spool/1123033140

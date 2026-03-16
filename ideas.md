@@ -3,7 +3,7 @@
 ## Token-Level Time Injection (brainstormed 2026-03-16)
 
 Instead of turn-based time (events queue between LLM responses), inject
-environmental changes DURING token generation. The creature would experience
+environmental changes DURING token generation. The spark would experience
 time passing while thinking, not just between thoughts.
 
 ### Approaches (from least to most radical):

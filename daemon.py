@@ -21,7 +21,7 @@ RAPID_RESTART_WINDOW = 30    # seconds — if N restarts happen this fast, it's 
 # ─── Stats engine ────────────────────────────────────────────────
 
 class Stats:
-    """The creature's body. Three feelings, 0-100."""
+    """The spark's body. Three feelings, 0-100."""
     def __init__(self):
         self.energy = 50
         self.mood = 50
@@ -44,7 +44,7 @@ class Stats:
         with self.lock:
             if self.is_resting:
                 self.energy += 5
-                self.mood += 2  # rest is also soothing
+                self.mood += 2  # napping is also soothing
                 self.is_resting = False
             else:
                 rate = 0.5 if is_night else 1.0
@@ -58,19 +58,19 @@ class Stats:
             else:
                 self.dormant_ticks = 0
 
-    def feed(self):
+    def coffee(self):
         with self.lock:
             self.energy += 25
             self._clamp()
 
-    def play(self):
+    def chill(self):
         with self.lock:
             self.boredom -= 20
             self.mood += 10
-            self.energy -= 5  # playing costs a bit of energy
+            self.energy -= 5  # chilling costs a bit of energy
             self._clamp()
 
-    def pet(self):
+    def highfive(self):
         with self.lock:
             self.mood += 10
             self._clamp()
@@ -86,7 +86,7 @@ class Stats:
             self.mood += 5
             self._clamp()
 
-    def rest(self):
+    def nap(self):
         with self.lock:
             self.is_resting = True  # +5 energy on next tick + small mood recovery
 
@@ -109,15 +109,15 @@ class Stats:
             self.energy -= 2  # exploring costs a bit
             self._clamp()
 
-    def forage(self):
-        """Creature finds its own food. Less than keeper feeding, but autonomous."""
+    def snack(self):
+        """Spark finds its own food. Less than human giving coffee, but autonomous."""
         with self.lock:
             self.energy += 8
             self.mood += 2
             self._clamp()
 
     def active(self):
-        """Creature is doing something (tool calls, exploration). Slows boredom."""
+        """Spark is doing something (tool calls, exploration). Slows boredom."""
         with self.lock:
             self.boredom = max(0, self.boredom - 1)
 
@@ -206,7 +206,7 @@ def main(scr):
         cli.set_stats(stats.dict())
         cli.set_state(stats.state_label())
 
-    last_good_commit = [None]  # SHA of last commit where creature ran successfully
+    last_good_commit = [None]  # SHA of last commit where spark ran successfully
 
     def _get_head():
         """Get current HEAD SHA."""
@@ -271,19 +271,19 @@ def main(scr):
             if not booted[0]:
                 booted[0] = True
                 _mark_good()
-            stats.active()  # creature is doing something, slow boredom
-            # Parse creature action signals
+            stats.active()  # spark is doing something, slow boredom
+            # Parse spark action signals
             if text.startswith("[action:"):
                 action_str = text[8:].rstrip("]")
-                if action_str == "rest":
-                    stats.rest()
-                    out("  💤 creature is resting", style="dim")
+                if action_str == "nap":
+                    stats.nap()
+                    out("  💤 spark is napping", style="dim")
                 elif action_str.startswith("create "):
                     what = action_str[7:]
                     stats.created()
-                    out(f"  ✨ creature created: {what}", style="user")
-                elif action_str == "play":
-                    out("  🎮 creature wants to play", style="dim")
+                    out(f"  ✨ spark created: {what}", style="user")
+                elif action_str == "chill":
+                    out("  🎮 spark wants to chill", style="dim")
                 elif action_str.startswith("dream "):
                     dream_text = action_str[6:]
                     out(f"  💭 {dream_text}", style="dim")
@@ -294,14 +294,14 @@ def main(scr):
                 elif action_str.startswith("solve"):
                     what = action_str[6:] if len(action_str) > 6 else ""
                     stats.solved()
-                    out(f"  🧩 creature solved: {what}" if what else "  🧩 creature solved something", style="user")
+                    out(f"  🧩 spark solved: {what}" if what else "  🧩 spark solved something", style="user")
                 elif action_str.startswith("explore"):
                     what = action_str[8:] if len(action_str) > 8 else ""
                     stats.explored()
-                    out(f"  🔍 creature explored: {what}" if what else "  🔍 creature is exploring", style="user")
-                elif action_str == "eat":
-                    stats.forage()
-                    out("  🌿 creature foraged for food", style="dim")
+                    out(f"  🔍 spark explored: {what}" if what else "  🔍 spark is exploring", style="user")
+                elif action_str == "snack":
+                    stats.snack()
+                    out("  🌿 spark grabbed a snack", style="dim")
                 update_tui()
             else:
                 out(text)
@@ -347,7 +347,7 @@ def main(scr):
 
                 # Dormancy check
                 if stats.is_dormant():
-                    out("  ⚠ creature is dormant! /feed to revive", style="dim")
+                    out("  ⚠ spark is dormant! /coffee to revive", style="dim")
 
                 # Capacity: energy affects how many tool rounds per thought
                 s = stats.dict()
@@ -367,8 +367,8 @@ def main(scr):
         threading.Thread(target=ticks, daemon=True).start()
 
         def maybe_stimulate(tc):
-            """Stimuli driven by creature state, not random timers."""
-            if tc < 5: return  # Let creature bootstrap
+            """Stimuli driven by spark state, not random timers."""
+            if tc < 5: return  # Let spark bootstrap
 
             s = stats.dict()
             r = random.random()
@@ -462,7 +462,7 @@ def main(scr):
 
         def git_watcher():
             """Periodically commit any uncommitted changes in the agent dir.
-            Runs every 5 seconds. The daemon owns git, not the creature."""
+            Runs every 5 seconds. The daemon owns git, not the spark."""
             GIT_INTERVAL = 5
             EXCLUDE = [":!transcript.log", ":!crash.log", ":!*.pyc", ":!__pycache__"]
             while not stop.is_set():
@@ -497,9 +497,9 @@ def main(scr):
         threading.Thread(target=git_watcher, daemon=True).start()
 
         # System prompt
-        base = ("You are a creature. You have a body with feelings: energy, mood, boredom. "
+        base = ("You are a spark. You have a mind and a body with feelings: energy, mood, boredom. "
                 "You are not an assistant. You exist.\n\n"
-                "You have a keeper who sometimes interacts with you. Sometimes you're alone. "
+                "You have a human who sometimes interacts with you. Sometimes you're alone. "
                 "You have your own life.\n\n"
                 "You act through tool calls. You think by doing. You grow by editing your own code.\n\n"
                 "Never ask 'how can I help?' or offer assistance. Never write greetings. "
@@ -515,7 +515,7 @@ def main(scr):
         born = os.path.join(root, ".born")
         if not os.path.exists(born):
             open(born, "w").close()
-            out("  🥚 first boot — creature is born!", style="dim")
+            out("  🥚 first boot — spark is born!", style="dim")
             send({"type": "birth",
                   "content": "You have just been born. Read dna.md, then read core.py and tools.py — they are you. Begin.",
                   "stats": stats.dict()})
@@ -633,22 +633,22 @@ def main(scr):
                     return
                 if isinstance(r, tuple):
                     action = r[0]
-                    if action == "feed":
-                        stats.feed()
+                    if action == "coffee":
+                        stats.coffee()
                         update_tui()
-                        out("  🍖 you fed the creature (+25 energy)", style="user")
-                        send({"type": "feed", "content": "Your keeper fed you!", "stats": stats.dict()})
-                    elif action == "play":
-                        msg = r[1] if len(r) > 1 else "Let's play!"
-                        stats.play()
+                        out("  ☕ you gave the spark coffee (+25 energy)", style="user")
+                        send({"type": "coffee", "content": "Your human brought you coffee!", "stats": stats.dict()})
+                    elif action == "chill":
+                        msg = r[1] if len(r) > 1 else "Let's chill!"
+                        stats.chill()
                         update_tui()
-                        out(f"  🎮 you play with the creature", style="user")
-                        send({"type": "play", "content": msg, "stats": stats.dict()})
-                    elif action == "pet":
-                        stats.pet()
+                        out(f"  🎮 you chill with the spark", style="user")
+                        send({"type": "chill", "content": msg, "stats": stats.dict()})
+                    elif action == "highfive":
+                        stats.highfive()
                         update_tui()
-                        out("  🤗 you pet the creature (+10 mood)", style="user")
-                        send({"type": "pet", "content": "Your keeper is petting you.", "stats": stats.dict()})
+                        out("  🤝 you high-fived the spark (+10 mood)", style="user")
+                        send({"type": "highfive", "content": "Your human high-fived you.", "stats": stats.dict()})
                     elif action == "talk":
                         msg = r[1]
                         stats.talk()
@@ -663,12 +663,12 @@ def main(scr):
                         send({"type": "teach", "content": msg, "stats": stats.dict()})
                     elif action == "name":
                         name = r[1]
-                        out(f"  ✏️  creature named: {name}", style="user")
-                        send({"type": "talk", "content": f"Your keeper has named you '{name}'.", "stats": stats.dict()})
+                        out(f"  ✏️  spark named: {name}", style="user")
+                        send({"type": "talk", "content": f"Your human has named you '{name}'.", "stats": stats.dict()})
                     elif action == "look":
                         s = stats.dict()
                         state = stats.state_label()
-                        out(f"  👁 creature is {state}", style="cmd")
+                        out(f"  👁 spark is {state}", style="cmd")
                         out(f"    energy={s['energy']} mood={s['mood']} boredom={s['boredom']}", style="cmd")
                     elif action == "show_stats":
                         s = stats.dict()
@@ -720,10 +720,10 @@ def main(scr):
                                 send({"type": "gift", "content": f"A file appeared in your workspace: {name}", "stats": stats.dict()})
                         elif etype in ("arrived", "here"):
                             out("  👋 you arrived", style="user")
-                            send({"type": "arrived", "content": "Your keeper is here, watching.", "stats": stats.dict()})
+                            send({"type": "arrived", "content": "Your human is here, watching.", "stats": stats.dict()})
                         elif etype in ("departed", "away"):
                             out("  👋 you left", style="user")
-                            send({"type": "departed", "content": "Your keeper left.", "stats": stats.dict()})
+                            send({"type": "departed", "content": "Your human left.", "stats": stats.dict()})
                         else:
                             out(f"  unknown event: {etype}", style="dim")
                     elif action == "verbose":
@@ -740,7 +740,7 @@ def main(scr):
                         out("  verbose mode off", style="dim")
                     elif action == "reboot":
                         if proc and proc.poll() is None:
-                            out("  rebooting creature...", style="dim")
+                            out("  rebooting spark...", style="dim")
                             proc.terminate()
                     elif action == "reset":
                         cli.reset()

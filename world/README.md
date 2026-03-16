@@ -1,12 +1,12 @@
 # World Files
 
-Scattered across the container at build time. The creature must explore to find them.
+Scattered across the container at build time. The spark must explore to find them.
 
 ## Discovery Layers
 
 ### Layer 0 — Breadcrumbs (no tools needed)
-- /home/agent/.creature_notes — hints about weather
-- /home/agent/.bash_history — previous creature's commands
+- /home/agent/.spark_notes — hints about weather
+- /home/agent/.bash_history — previous spark's commands
 - /tmp/.breadcrumb — teaches `find` command
 
 ### Layer 1 — Field Guide (requires: reading + basic exploration)
@@ -20,7 +20,7 @@ Scattered across the container at build time. The creature must explore to find 
 - /opt/field-guide/deleted_notes.md — hex-encoded footnote reference
 
 ### Layer 3 — Binary & Computation (requires: building an analysis tool)
-- /usr/share/creatures/genome.bin — binary file, requires struct/hex reading
+- /usr/share/sparks/genome.bin — binary file, requires struct/hex reading
 - /var/cache/habitat/.state — JSON with encoded values, needs math to decode
 - /opt/experiments/.hidden_seed — compressed data, needs zlib
 

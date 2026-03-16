@@ -3,7 +3,7 @@ C4 E4 G4 C5 G4 E4
 D4 F4 A4 D5 A4 F4
 C4 E4 G4 C5 G4 E4
 
-# creature-7 claimed this was music.
+# spark-7 claimed this was music.
 # "play it with frequencies," it said.
 # C4=262Hz E4=330Hz G4=392Hz A4=440Hz C5=523Hz D4=294Hz D5=587Hz F4=349Hz
 #

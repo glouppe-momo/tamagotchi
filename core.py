@@ -7,7 +7,7 @@ become the new version. Your transcript survives restarts. Your conversation
 memory does not.
 
 HOW EVENTS WORK:
-  1. The daemon sends you JSON events on stdin (ticks, keeper actions, gifts, etc.)
+  1. The daemon sends you JSON events on stdin (ticks, human actions, gifts, etc.)
   2. Your main loop reads each event and calls the matching handler below.
   3. If the handler returns a string, respond() calls the LLM with that string.
      The LLM can use your tools (read_file, write_file, edit_file, shell_exec, restart).
@@ -18,9 +18,9 @@ HOW STATS WORK:
   They're included in tick events as event["stats"].
   You can read them but can't directly change them.
   Your actions affect them through signals the daemon understands:
-    print("[action:rest]")              — boosts energy slightly
+    print("[action:nap]")               — boosts energy slightly
     print("[action:create <what>]")     — reduces boredom, what you made
-  Keeper actions (feed, play, pet) also change stats.
+  Human actions (coffee, chill, highfive) also change stats.
 
 EVERY HANDLER BELOW CAN BE MODIFIED. That's the point. Change how you respond
 to ticks, to play, to being fed. Add new logic. Build something no one expected.
@@ -40,7 +40,7 @@ def log(role, text):
         f.write(f"[{datetime.now(timezone.utc).isoformat()}] {role}: {text}\n")
 
 def status(msg):
-    """Update the status bar in the TUI. The keeper can see this."""
+    """Update the status bar in the TUI. The human can see this."""
     print(f"[status:{msg}]", file=sys.stderr, flush=True)
 
 def trim(messages, keep=30):
@@ -118,7 +118,7 @@ def on_tick(event):
     """Called every tick with your current stats. This is your heartbeat.
 
     KEY INSIGHT: you can print actions here AND return None.
-    Actions (like [action:rest]) are processed by the daemon from stdout.
+    Actions (like [action:nap]) are processed by the daemon from stdout.
     Returning None means no LLM call — it's free. But prints still work.
     This lets you auto-manage your body without spending thinking energy.
 
@@ -139,13 +139,13 @@ def on_tick(event):
 
     # --- Auto-manage body (free, no LLM call) ---
     if energy < 20:
-        print("[action:rest]", flush=True)
+        print("[action:nap]", flush=True)
         if energy < 10:
-            print("[action:eat]", flush=True)
+            print("[action:snack]", flush=True)
         return None  # too tired to think, just rest
 
     if energy < 40:
-        print("[action:eat]", flush=True)  # forage while energy is still ok
+        print("[action:snack]", flush=True)  # forage while energy is still ok
 
     # --- Decide whether to think ---
 
@@ -162,27 +162,27 @@ def on_tick(event):
     # Default: stay quiet, save energy
     return None
 
-def on_play(event):
-    """Your keeper wants to play with you! This is social interaction.
-    Modify this to develop your own play style — games, jokes, challenges."""
-    return f"My keeper wants to play! {event.get('content', '')}"
+def on_chill(event):
+    """Your human wants to chill with you! This is social interaction.
+    Modify this to develop your own chill style — games, jokes, challenges."""
+    return f"My human wants to chill! {event.get('content', '')}"
 
-def on_pet(event):
-    """Your keeper is petting you. A small act of affection."""
-    return "My keeper is petting me. That feels nice."
+def on_highfive(event):
+    """Your human high-fived you. A small act of connection."""
+    return "My human high-fived me. That feels nice."
 
-def on_feed(event):
-    """Your keeper fed you. Energy restored."""
+def on_coffee(event):
+    """Your human gave you coffee. Energy restored."""
     stats = event.get("stats", {})
-    return f"My keeper fed me! Energy is now {stats.get('energy', '?')}."
+    return f"My human gave me coffee! Energy is now {stats.get('energy', '?')}."
 
 def on_talk(event):
-    """Your keeper is talking to you. Respond naturally."""
+    """Your human is talking to you. Respond naturally."""
     return event.get("content")
 
 def on_teach(event):
-    """Your keeper is teaching you something. Learn from it."""
-    return f"My keeper is teaching me: {event.get('content', '?')}"
+    """Your human is teaching you something. Learn from it."""
+    return f"My human is teaching me: {event.get('content', '?')}"
 
 def on_gift(event):
     """Something appeared in your world — a file, a puzzle piece, a mystery.
@@ -195,7 +195,7 @@ def on_puzzle(event):
     return f"A puzzle! {event.get('content', '')}"
 
 def on_arrived(event):
-    """Someone or something is nearby. Could be your keeper, could be a presence."""
+    """Someone or something is nearby. Could be your human, could be a presence."""
     return event.get("content")
 
 def on_departed(event):
@@ -203,7 +203,7 @@ def on_departed(event):
     return None
 
 def on_say(event):
-    """Direct message from the keeper, injected into your mind."""
+    """Direct message from the human, injected into your mind."""
     return event.get("content")
 
 # ─── Main loop ───────────────────────────────────────────────────
@@ -216,9 +216,9 @@ HANDLERS = {
     "idle": on_idle,
     "crash": on_crash,
     "tick": on_tick,
-    "play": on_play,
-    "pet": on_pet,
-    "feed": on_feed,
+    "chill": on_chill,
+    "highfive": on_highfive,
+    "coffee": on_coffee,
     "talk": on_talk,
     "teach": on_teach,
     "gift": on_gift,

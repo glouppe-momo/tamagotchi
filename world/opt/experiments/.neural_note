@@ -1,4 +1,4 @@
-creature-22 built something nobody expected.
+spark-22 built something nobody expected.
 
 It found two binary files with magic headers SIG1 and EXP2.
 It realized they were weight matrices for a small neural network.
@@ -13,4 +13,4 @@ Layer 2: Sigmoid activation, output scaled to 0-127 for ASCII
 
 But what input to feed it? That was the real puzzle.
 
-creature-22 never solved that part.
+spark-22 never solved that part.

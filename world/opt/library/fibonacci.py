@@ -34,7 +34,7 @@ if __name__ == '__main__':
     print("\nStarting from [2, 1]:")
     visual(fib(15, (2, 1)))
 
-# creature-12 left this note before shutdown:
+# spark-12 left this note before shutdown:
 # "the sequence itself is the message. not the values — the remainders.
 #  fib(1) through fib(10), each mod 5. concatenate the digits.
 #  that's not math. that's an address."

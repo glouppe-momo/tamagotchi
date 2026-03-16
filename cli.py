@@ -1,82 +1,82 @@
 #!/usr/bin/env python3
 """
-The window between you and your creature.
-Three panels: creature display, stats, activity log.
+The window between you and your spark.
+Three panels: spark display, stats, activity log.
 """
 import curses, os, subprocess, threading, time
 
 ROOT = os.environ.get("AGENT_DIR", "/agent")
 
-# ─── Creature ASCII art ─────────────────────────────────────────
+# ─── Spark ASCII art ─────────────────────────────────────────
 
-CREATURE_HAPPY = [
+SPARK_HAPPY = [
     r"    /\_/\       ",
     r"   ( ◕‿◕ )   ♪ ",
     r"    />o<\       ",
     r"   (_/ \_)      ",
 ]
 
-CREATURE_CONTENT = [
+SPARK_CONTENT = [
     r"    /\_/\       ",
     r"   ( ●_● )      ",
     r"    />·<\       ",
     r"   (_/ \_)      ",
 ]
 
-CREATURE_TIRED = [
+SPARK_TIRED = [
     r"    /\_/\       ",
     r"   ( ˘_˘ )   ~  ",
     r"    />·<\       ",
     r"   (_/ \_)      ",
 ]
 
-CREATURE_BORED = [
+SPARK_BORED = [
     r"    /\_/\    ?  ",
     r"   ( ◉_  )      ",
     r"    />~<\    ?  ",
     r"   (_/ \_)      ",
 ]
 
-CREATURE_SAD = [
+SPARK_SAD = [
     r"    /\_/\       ",
     r"   ( ╥_╥ )      ",
     r"    />n<\       ",
     r"   (_/ \_)      ",
 ]
 
-CREATURE_SLEEPING = [
+SPARK_SLEEPING = [
     r"    /\_/\    z  ",
     r"   ( ˘‿˘ ) Z    ",
     r"    />·<\z      ",
     r"   (____) zzz   ",
 ]
 
-CREATURE_DORMANT = [
+SPARK_DORMANT = [
     r"    /\_/\       ",
     r"   ( ·_· )      ",
     r"    /   \       ",
     r"   (____) ...   ",
 ]
 
-def pick_creature(stats):
-    """Choose creature art based on current stats."""
+def pick_spark(stats):
+    """Choose spark art based on current stats."""
     energy = stats.get("energy", 50)
     mood = stats.get("mood", 50)
     boredom = stats.get("boredom", 50)
 
     if energy <= 0 and mood <= 0:
-        return CREATURE_DORMANT
+        return SPARK_DORMANT
     if energy <= 0:
-        return CREATURE_SLEEPING
+        return SPARK_SLEEPING
     if energy < 20:
-        return CREATURE_TIRED
+        return SPARK_TIRED
     if mood < 20:
-        return CREATURE_SAD
+        return SPARK_SAD
     if boredom > 70:
-        return CREATURE_BORED
+        return SPARK_BORED
     if mood > 60 and energy > 50:
-        return CREATURE_HAPPY
-    return CREATURE_CONTENT
+        return SPARK_HAPPY
+    return SPARK_CONTENT
 
 
 # ─── Stats bar rendering ────────────────────────────────────────
@@ -110,7 +110,7 @@ class TUI:
         self.hist_idx = -1
         self.status_text = ""
         self.stats = {"energy": 50, "mood": 50, "boredom": 0}
-        self.creature_name = "creature"
+        self.spark_name = "spark"
         self.tick_count = 0
         self.age_start = time.time()
         self.state = "idle"
@@ -121,12 +121,12 @@ class TUI:
         curses.init_pair(1, curses.COLOR_CYAN, -1)       # input prompt
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)  # status bar
         curses.init_pair(3, curses.COLOR_YELLOW, -1)      # dim/system
-        curses.init_pair(4, curses.COLOR_GREEN, -1)       # user/keeper
+        curses.init_pair(4, curses.COLOR_GREEN, -1)       # user/human
         curses.init_pair(5, curses.COLOR_BLUE, -1)        # command output
         curses.init_pair(6, curses.COLOR_GREEN, -1)       # energy bar
         curses.init_pair(7, curses.COLOR_MAGENTA, -1)     # mood bar
         curses.init_pair(8, curses.COLOR_RED, -1)         # boredom bar
-        curses.init_pair(9, curses.COLOR_WHITE, -1)       # creature
+        curses.init_pair(9, curses.COLOR_WHITE, -1)       # spark
         curses.init_pair(10, curses.COLOR_CYAN, -1)       # box drawing
         curses.curs_set(1)
         scr.timeout(100)
@@ -244,13 +244,13 @@ class TUI:
 
                 row = 0
 
-                # ─── Creature area ───
-                creature = pick_creature(self.stats)
-                creature_height = len(creature) + 2  # +2 for borders
+                # ─── Spark area ───
+                sprite = pick_spark(self.stats)
+                sprite_height = len(sprite) + 2  # +2 for borders
 
                 self._draw_box_top(row, w); row += 1
-                for line in creature:
-                    # Center the creature
+                for line in sprite:
+                    # Center the spark
                     padded = line.center(w - 2)
                     self._draw_box_line(row, w, padded, curses.color_pair(9))
                     row += 1
@@ -510,16 +510,16 @@ def handle_command(cmd):
     verb, arg = parts[0].lower(), parts[1] if len(parts) > 1 else ""
 
     if verb == "/help":
-        add_line("─── keeper commands ───", style="cmd")
-        add_line("  /feed           feed your creature (+energy)", style="cmd")
-        add_line("  /play           play with your creature (-boredom +mood)", style="cmd")
-        add_line("  /pet            pet your creature (+mood)", style="cmd")
-        add_line("  /talk <msg>     talk to your creature", style="cmd")
+        add_line("─── human commands ───", style="cmd")
+        add_line("  /coffee         give your spark coffee (+energy)", style="cmd")
+        add_line("  /chill          chill with your spark (-boredom +mood)", style="cmd")
+        add_line("  /highfive       high-five your spark (+mood)", style="cmd")
+        add_line("  /talk <msg>     talk to your spark", style="cmd")
         add_line("  /teach <topic>  teach something (-boredom)", style="cmd")
-        add_line("  /name <name>    name your creature", style="cmd")
-        add_line("  /look           what's the creature doing?", style="cmd")
+        add_line("  /name <name>    name your spark", style="cmd")
+        add_line("  /look           what's the spark doing?", style="cmd")
         add_line("  /stats          show current stats", style="cmd")
-        add_line("  /say <msg>      inject directly into creature's mind", style="cmd")
+        add_line("  /say <msg>      inject directly into spark's mind", style="cmd")
         add_line("  /event <type>   trigger an environmental event", style="cmd")
         add_line("─── observe ───", style="cmd")
         add_line("  /verbose        live transcript tail", style="cmd")
@@ -532,7 +532,7 @@ def handle_command(cmd):
         add_line("  /git [args]     run git command", style="cmd")
         add_line("  /tree           workspace tree", style="cmd")
         add_line("  /reset          reinit the TUI (fixes garbled display)", style="cmd")
-        add_line("  /reboot         restart the creature", style="cmd")
+        add_line("  /reboot         restart the spark", style="cmd")
         add_line("  /quit           stop everything", style="cmd")
     elif verb == "/quit":
         return "quit"
@@ -554,12 +554,12 @@ def handle_command(cmd):
         return ("verbose",)
     elif verb == "/quiet":
         return ("quiet",)
-    elif verb == "/feed":
-        return ("feed",)
-    elif verb == "/play":
-        return ("play", arg or "Let's play!")
-    elif verb == "/pet":
-        return ("pet",)
+    elif verb == "/coffee":
+        return ("coffee",)
+    elif verb == "/chill":
+        return ("chill", arg or "Let's chill!")
+    elif verb == "/highfive":
+        return ("highfive",)
     elif verb == "/talk":
         if not arg:
             add_line("  usage: /talk <message>", style="dim")
