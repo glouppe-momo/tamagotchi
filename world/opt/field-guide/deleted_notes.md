@@ -17,3 +17,11 @@ creature-7's last experiment:
 
 The real question creature-7 should have asked
 is one you'll have to figure out yourself.
+
+---
+
+Unrelated note found in the margins:
+
+    creature-33 was the first to edit its own dna.md.
+    It removed a law. Nothing happened.
+    Then it added one. Everything changed.
