@@ -257,6 +257,13 @@ def main(scr):
                     out(f"  ✨ creature created: {what}", style="user")
                 elif action_str == "play":
                     out("  🎮 creature wants to play", style="dim")
+                elif action_str.startswith("dream "):
+                    dream_text = action_str[6:]
+                    out(f"  💭 {dream_text}", style="dim")
+                    try:
+                        with open(os.path.join(root, "dreams.log"), "a") as f:
+                            f.write(f"[{datetime.now(timezone.utc).isoformat()}] {dream_text}\n")
+                    except: pass
                 update_tui()
             else:
                 out(text)
