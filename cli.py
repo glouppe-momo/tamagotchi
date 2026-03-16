@@ -531,6 +531,7 @@ def handle_command(cmd):
         add_line("  /cat <file>     show file contents", style="cmd")
         add_line("  /git [args]     run git command", style="cmd")
         add_line("  /tree           workspace tree", style="cmd")
+        add_line("  /reset          reinit the TUI (fixes garbled display)", style="cmd")
         add_line("  /reboot         restart the creature", style="cmd")
         add_line("  /quit           stop everything", style="cmd")
     elif verb == "/quit":
