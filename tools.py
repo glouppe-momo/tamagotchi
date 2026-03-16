@@ -14,7 +14,9 @@ import json, os, subprocess, sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 def read_file(path: str) -> str:
-    """Read a file and return its contents. Paths are relative to your workspace (/agent)."""
+    """Read a file and return its contents. Paths are relative to your workspace (/agent).
+    Use shell_exec for binary files (this reads as text)."""
+    path = os.path.expanduser(path)
     if not os.path.isabs(path):
         path = os.path.join(ROOT, path)
     with open(path) as f: return f.read()
@@ -23,6 +25,7 @@ def write_file(path: str, content: str) -> str:
     """Write content to a file. Creates directories if needed.
     Paths are relative to your workspace (/agent).
     If you write broken Python, the daemon will revert it."""
+    path = os.path.expanduser(path)
     if not os.path.isabs(path):
         path = os.path.join(ROOT, path)
     d = os.path.dirname(path)
@@ -35,6 +38,7 @@ def edit_file(path: str, old_text: str, new_text: str) -> str:
     """Replace exact text in a file. Fails if old_text not found.
     Paths are relative to your workspace (/agent).
     Use this for surgical edits to your own code."""
+    path = os.path.expanduser(path)
     if not os.path.isabs(path):
         path = os.path.join(ROOT, path)
     content = read_file(path)
