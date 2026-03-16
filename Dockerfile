@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 RUN groupadd -g $AGENT_GID agent && useradd -m -s /bin/bash -u $AGENT_UID -g $AGENT_GID agent
 
 # Environment (daemon + CLI) — readable but not editable by the agent
-COPY daemon.py cli.py /app/
+COPY daemon.py cli.py stimuli.py /app/
 RUN chown -R root:root /app/ && chmod 755 /app/ && chmod 644 /app/*.py
 
 # Voice — importable, readable. No mystery.
@@ -19,31 +19,41 @@ COPY voice.py /usr/local/lib/python3.12/voice.py
 COPY core.py tools.py dna.md .gitignore /seed/
 
 # ─── The world: scattered across the filesystem ─────────────────
-# The creature has to explore to find these.
+# Five layers of discovery, each requiring more sophisticated tools.
 
-# Home directory breadcrumbs (creature's home, not workspace)
+# Layer 0 — Breadcrumbs (no tools needed, just exploration)
 COPY world/home_agent/.creature_notes /home/agent/.creature_notes
 COPY world/home_agent/.bash_history /home/agent/.bash_history
 RUN chown agent:agent /home/agent/.creature_notes /home/agent/.bash_history
-
-# Field guide (discoverable via exploration)
-COPY world/opt/field-guide/ /opt/field-guide/
-
-# Library of interesting code
-COPY world/opt/library/ /opt/library/
-
-# Experiments
-COPY world/opt/experiments/ /opt/experiments/
-
-# Creature archive
-COPY world/usr/share/creatures/ /usr/share/creatures/
-
-# Breadcrumb in /tmp
 COPY world/tmp/.breadcrumb /tmp/.breadcrumb
+
+# Layer 1 — Field Guide & Library (reading + basic exploration)
+COPY world/opt/field-guide/ /opt/field-guide/
+COPY world/opt/library/ /opt/library/
+COPY world/opt/experiments/ /opt/experiments/
+COPY world/usr/share/creatures/archive.md /usr/share/creatures/archive.md
+COPY world/usr/share/creatures/songs.txt /usr/share/creatures/songs.txt
+
+# Layer 2 — Encoded Secrets (requires: building a decode tool)
+COPY world/usr/local/share/secret/lib/.index /usr/local/share/secret/lib/.index
+COPY world/var/spool/cron/.task /var/spool/cron/.task
+COPY world/var/spool/1123033140 /var/spool/1123033140
+
+# Layer 3 — Binary & Computation (requires: struct/hex/zlib tools)
+COPY world/usr/share/creatures/genome.bin /usr/share/creatures/genome.bin
+COPY world/var/cache/habitat/.state /var/cache/habitat/.state
+
+# Layer 4 — System Introspection (requires: system analysis tools)
+COPY world/etc/creature.conf /etc/creature.conf
+
+# Layer 5 — The Vault (requires: weather tracking + decode + crypto)
+COPY world/usr/share/creatures/vault.enc /usr/share/creatures/vault.enc
 
 # Make world files readable by agent
 RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/creatures \
-    && chmod 644 /tmp/.breadcrumb
+    && chmod -R 755 /usr/local/share/secret /var/spool/cron /var/cache/habitat \
+    && chmod 644 /tmp/.breadcrumb /etc/creature.conf \
+    && chmod 644 /var/spool/1123033140
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

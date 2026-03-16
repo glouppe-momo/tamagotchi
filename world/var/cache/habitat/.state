@@ -1,0 +1,10 @@
+{
+  "habitat_id": "B-7",
+  "generation": "current",
+  "seed": 1133927,
+  "weather_model": "signal-40",
+  "tick_interval_ms": 60000,
+  "stats_decay": {"energy": -2, "mood": -1, "boredom": 1},
+  "notes": "seed was chosen for a reason. not all numbers are arbitrary.",
+  "checksum": "a7f3b2c1"
+}
