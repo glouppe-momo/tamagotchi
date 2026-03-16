@@ -101,11 +101,23 @@ class Stats:
             self.mood += 8
             self._clamp()
 
+    def explored(self):
+        with self.lock:
+            self.mood += 3
+            self.boredom -= 5
+            self.energy -= 2  # exploring costs a bit
+            self._clamp()
+
+    def forage(self):
+        """Creature finds its own food. Less than keeper feeding, but autonomous."""
+        with self.lock:
+            self.energy += 8
+            self._clamp()
+
     def active(self):
         """Creature is doing something (tool calls, exploration). Slows boredom."""
         with self.lock:
             self.boredom = max(0, self.boredom - 1)
-            # No clamp needed, max(0, ...) handles it
 
     def is_dormant(self):
         with self.lock:
@@ -281,6 +293,13 @@ def main(scr):
                     what = action_str[6:] if len(action_str) > 6 else ""
                     stats.solved()
                     out(f"  🧩 creature solved: {what}" if what else "  🧩 creature solved something", style="user")
+                elif action_str.startswith("explore"):
+                    what = action_str[8:] if len(action_str) > 8 else ""
+                    stats.explored()
+                    out(f"  🔍 creature explored: {what}" if what else "  🔍 creature is exploring", style="user")
+                elif action_str == "eat":
+                    stats.forage()
+                    out("  🌿 creature foraged for food", style="dim")
                 update_tui()
             else:
                 out(text)
@@ -328,12 +347,17 @@ def main(scr):
                 if stats.is_dormant():
                     out("  ⚠ creature is dormant! /feed to revive", style="dim")
 
+                # Capacity: energy affects how many tool rounds per thought
+                s = stats.dict()
+                capacity = max(3, int(s["energy"] / 100 * 30))
+
                 # Send tick with stats
                 send({"type": "tick",
                       "time": datetime.now(timezone.utc).isoformat(),
                       "weather": world["weather"],
                       "tick": world["tick_count"],
-                      "stats": stats.dict()})
+                      "stats": s,
+                      "capacity": capacity})
 
                 # State-driven stimuli
                 maybe_stimulate(world["tick_count"])
