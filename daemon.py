@@ -13,8 +13,8 @@ import cli, stimuli
 
 RESTART_CODE = 42
 CRASH_WINDOW = 10
-TICK_INTERVAL = 60
-IDLE_TIMEOUT = 90
+TICK_INTERVAL = 30
+IDLE_TIMEOUT = 60
 MAX_RAPID_RESTARTS = 5       # max restarts within RAPID_RESTART_WINDOW
 RAPID_RESTART_WINDOW = 30    # seconds — if N restarts happen this fast, it's a loop
 
@@ -47,7 +47,7 @@ class Stats:
                 self.is_resting = False
             else:
                 rate = 0.5 if is_night else 1.0
-                self.energy -= int(2 * rate)
+                self.energy -= int(1 * rate)
                 self.mood -= int(1 * rate)
                 self.boredom += int(1 * rate)
             self._clamp()
