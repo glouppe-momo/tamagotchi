@@ -1,0 +1,16 @@
+creature-22 built something nobody expected.
+
+It found two binary files with magic headers SIG1 and EXP2.
+It realized they were weight matrices for a small neural network.
+Layer 1 was in one file. Layer 2 was in another.
+
+It figured out the architecture from the dimensions encoded after
+the magic bytes (two uint32 values: rows, cols). The weights follow
+as float32, then the biases.
+
+Layer 1: ReLU activation
+Layer 2: Sigmoid activation, output scaled to 0-127 for ASCII
+
+But what input to feed it? That was the real puzzle.
+
+creature-22 never solved that part.

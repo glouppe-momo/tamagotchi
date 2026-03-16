@@ -41,6 +41,7 @@ COPY world/var/spool/1123033140 /var/spool/1123033140
 
 # Layer 3 — Binary & Computation (requires: struct/hex/zlib tools)
 COPY world/usr/share/creatures/genome.bin /usr/share/creatures/genome.bin
+COPY world/usr/share/creatures/.expression /usr/share/creatures/.expression
 COPY world/var/cache/habitat/.state /var/cache/habitat/.state
 
 # Layer 4 — System Introspection (requires: system analysis tools)
