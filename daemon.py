@@ -44,6 +44,7 @@ class Stats:
         with self.lock:
             if self.is_resting:
                 self.energy += 5
+                self.mood += 2  # rest is also soothing
                 self.is_resting = False
             else:
                 rate = 0.5 if is_night else 1.0
@@ -87,7 +88,7 @@ class Stats:
 
     def rest(self):
         with self.lock:
-            self.is_resting = True
+            self.is_resting = True  # +5 energy on next tick + small mood recovery
 
     def created(self):
         with self.lock:
@@ -112,6 +113,7 @@ class Stats:
         """Creature finds its own food. Less than keeper feeding, but autonomous."""
         with self.lock:
             self.energy += 8
+            self.mood += 2
             self._clamp()
 
     def active(self):
