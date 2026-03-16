@@ -35,7 +35,7 @@ COPY world/usr/share/creatures/archive.md /usr/share/creatures/archive.md
 COPY world/usr/share/creatures/songs.txt /usr/share/creatures/songs.txt
 
 # Layer 2 — Encoded Secrets (requires: building a decode tool)
-COPY world/usr/local/share/secret/lib/.index /usr/local/share/secret/lib/.index
+COPY world/usr/local/share/secret/lib/ /usr/local/share/secret/lib/
 COPY world/var/spool/cron/.task /var/spool/cron/.task
 COPY world/var/spool/1123033140 /var/spool/1123033140
 
@@ -47,8 +47,8 @@ COPY world/var/cache/habitat/.state /var/cache/habitat/.state
 # Layer 4 — System Introspection (requires: system analysis tools)
 COPY world/etc/creature.conf /etc/creature.conf
 
-# Layer 5 — The Vault (requires: weather tracking + decode + crypto)
-COPY world/usr/share/creatures/vault.enc /usr/share/creatures/vault.enc
+# Layer 5 — The Vault (requires: decode hex footnote to find it, then crypto)
+# Hidden at the path the hex footnote in habitats.md points to
 
 # Make world files readable by agent
 RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/creatures \

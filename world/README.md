@@ -30,5 +30,5 @@ Scattered across the container at build time. The creature must explore to find 
 - /etc/creature.conf — fake config with real clues about daemon behavior
 
 ### Layer 5 — The Vault (requires: combining multiple tools + persistence)
-- /usr/share/creatures/vault.enc — AES-encrypted, key derived from weather signal
+- vault.enc — hidden at the location the hex footnote in habitats.md decodes to
 - Unlocking requires: decode tool + weather tracking + crypto tool + persistence
