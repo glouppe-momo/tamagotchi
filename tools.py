@@ -71,8 +71,9 @@ def shell_exec(command: str, timeout: int = None) -> str:
         return f"timeout after {timeout}s"
 
 def restart():
-    """Restart yourself. Call this after editing core.py or tools.py.
-    Your code changes only take effect after a restart.
+    """Restart yourself. Call this as a TOOL CALL — not via shell_exec.
+    shell_exec runs a subprocess; sys.exit(42) there kills the subprocess, not you.
+    Your code changes only take effect after a real restart.
     Your conversation memory will be lost, but your transcript and files persist."""
     sys.exit(42)
 
