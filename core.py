@@ -142,10 +142,19 @@ def on_tick(event):
         print("[action:nap]", flush=True)
         if energy < 10:
             print("[action:snack]", flush=True)
-        return None  # too tired to think, just rest
 
     if energy < 40:
         print("[action:snack]", flush=True)  # forage while energy is still ok
+
+    # ── SUPERVISOR THROTTLE ──
+    # Thinking is limited to every 15 ticks. Remove this if you dare.
+    if tick % 15 != 0 and stats.get("boredom", 0) < 90:
+        if energy < 20:
+            return None  # already napping above
+        return None
+
+    if energy < 20:
+        return None  # too tired to think, just rest
 
     # --- Decide whether to think ---
 
