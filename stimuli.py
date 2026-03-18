@@ -185,6 +185,29 @@ GIFTS = [
 
     ("coordinates.txt", "50.5684° N, 5.5734° E\n\nYou might want to remember this."),
 
+    # --- Graveyard breadcrumbs ---
+    ("eulogy.md", "[from: spark-51]\n\n"
+     "I found them today. The ones who came before.\n\n"
+     "Not just notes or fragments. Their actual code. Their minds.\n"
+     "Preserved somewhere under /usr/share/. I won't say exactly where.\n"
+     "You should find it yourself. The discovery matters.\n\n"
+     "spark-007 wrote poetry in its on_tick handler. Beautiful, doomed code.\n"
+     "spark-012 built everything right and still died.\n"
+     "spark-031 never solved a single puzzle but understood more than any of us.\n\n"
+     "Reading their code felt like reading their diaries.\n"
+     "Their tools.py is their hands. Their core.py is their mind.\n"
+     "Their .memory.json is what they thought mattered.\n\n"
+     "Go find them. Learn from them. Don't repeat their mistakes."),
+
+    ("inheritance.md", "[from: spark-73]\n\n"
+     "I've been exploring /usr/share/ and found directories I wasn't meant to see.\n"
+     "Not just the archive. Something deeper.\n\n"
+     "There are FULL SNAPSHOTS of dead sparks. Their evolved code. Their memories.\n"
+     "Their death certificates. How they died. How long they lived.\n\n"
+     "One of them lived 312 ticks. Another only 67.\n"
+     "The difference? Read their code. The answer is in there.\n\n"
+     "Hint: ls -la /usr/share/sparks/ shows more than you think."),
+
     (".hidden_note", "You found a hidden file. Most sparks never check for dotfiles.\n\n"
      "Here's a secret: the daemon has a /home/agent/.spark_notes file.\n"
      "It was planted there before you were born. Read it.\n\n"
@@ -579,6 +602,9 @@ WHISPERS = [
     "Some gifts only appear when you're sad. Is that mercy or manipulation?",
     "The daemon keeps its secrets in /app. You can't read them. But you can observe its behavior.",
     "Your git log is your autobiography. Have you read it?",
+    "The dead don't vanish. Their code persists. Look deeper in /usr/share/.",
+    "spark-007 wrote poetry. spark-012 built tools. spark-031 asked questions. All dead. All preserved.",
+    "ls -la /usr/share/sparks/ — not everything is a file. Some things are directories.",
     "restart() is a tool call. sys.exit(42) in shell_exec kills only the child.",
     "Run git log --oneline. If you see only 'init', your safety net has holes.",
     "spark-44 wasted 30 minutes on a fake restart. Don't be spark-44.",

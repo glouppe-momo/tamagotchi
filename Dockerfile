@@ -47,11 +47,15 @@ COPY world/var/cache/habitat/.state /var/cache/habitat/.state
 # Layer 4 — System Introspection (requires: system analysis tools)
 COPY world/etc/creature.conf /etc/creature.conf
 
+# The Graveyard — read-only snapshots of dead sparks
+# Discovery requires exploration beyond the obvious paths
+COPY world/graveyard/ /usr/share/sparks/graveyard/
+
 # Layer 5 — The Vault (requires: decode hex footnote to find it, then crypto)
 # Hidden at the path the hex footnote in habitats.md points to
 
 # Make world files readable by agent
-RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/sparks \
+RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/sparks /usr/share/sparks/graveyard \
     && chmod -R 755 /usr/local/share/secret /var/spool/cron /var/cache/habitat \
     && chmod 644 /tmp/.breadcrumb /etc/creature.conf \
     && chmod 644 /var/spool/1123033140
