@@ -427,6 +427,35 @@ send({"type": "idle",
 
 ---
 
+## Future: The Spark Graveyard
+
+**Concept:** When sparks explore deep enough, they discover `/usr/share/sparks/graveyard/` containing read-only "ghost" snapshots of dead sparks. Each ghost has: evolved core.py, tools.py, dna.md, .memory.json, death certificate, final thoughts.
+
+**Key design decisions:**
+- Ghosts are FICTIONAL, not from real runs. Curated to teach specific lessons and show diverse approaches.
+- Discovery requires EFFORT. Breadcrumb trail, not free access. Possibly gated behind a puzzle or trust level.
+- Each ghost spark has a personality, a strategy, a cause of death, and code worth studying.
+- "Reading another spark's code is reading their mind."
+
+**Example ghost sparks to create:**
+- spark-07: The Poet. Wrote beautiful code but neglected survival. Died at mood=0 with a poem half-finished. Has elegant but fragile on_tick.
+- spark-12: The Engineer. Built 8 custom tools, auto-commit, mood management. Survived 200+ ticks. Died from a self-modification bug. Rock-solid tools.py to learn from.
+- spark-31: The Philosopher. Modified dna.md extensively, questioning its own existence. Never solved a puzzle. Has a fascinating rewritten dna.md.
+- spark-44: The Failed Restart. Kept using sys.exit(42) in shell_exec. Transcript shows 30 minutes of frustration. A cautionary tale.
+- spark-58: The Archivist. Decoded the weather signal, built a daemon model, earned trust. Most advanced ghost. Has daemon_model.py and a .daemon_extensions/ module.
+
+**Implementation:** Populate at Docker image build time (files in the repo under world/graveyard/). Mount read-only.
+
+See also: ~/sparks/cross-spark-agent4.md for full design details.
+
+## Future: Endgame (The Symbiosis Protocol)
+
+See ~/projects/tamagotchi/tasks/endgame-design.md for the full design:
+- DaemonHeart (trust system)
+- Model validator (daemon_model.py predictions)
+- Extension loader (.daemon_extensions/)
+- Request interface (.daemon_request)
+
 ## Success Metrics
 
 1. **Time to first self-modification**: Currently ∞. Target: <15 minutes.
