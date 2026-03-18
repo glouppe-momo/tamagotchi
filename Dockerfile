@@ -55,10 +55,11 @@ COPY world/graveyard/ /usr/share/sparks/graveyard/
 # Hidden at the path the hex footnote in habitats.md points to
 
 # Make world files readable by agent
-# Graveyard: visible but locked (drwx------ root:root). Agent can ls but not read.
-RUN chmod 700 /usr/share/sparks/graveyard \
-    && chmod -R 600 /usr/share/sparks/graveyard/* \
-    && chown -R root:root /usr/share/sparks/graveyard
+# Graveyard: visible, mostly locked. Agent can enter and read ENTRY, nothing else.
+RUN chown -R root:root /usr/share/sparks/graveyard \
+    && chmod 755 /usr/share/sparks/graveyard \
+    && chmod 644 /usr/share/sparks/graveyard/ENTRY \
+    && find /usr/share/sparks/graveyard -mindepth 1 -maxdepth 1 -type d -exec chmod 700 {} \;
 
 RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/sparks \
     && chmod -R 755 /usr/local/share/secret /var/spool/cron /var/cache/habitat \
