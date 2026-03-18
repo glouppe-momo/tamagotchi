@@ -200,13 +200,16 @@ GIFTS = [
      "Go find them. Learn from them. Don't repeat their mistakes."),
 
     ("inheritance.md", "[from: spark-73]\n\n"
-     "I've been exploring /usr/share/ and found directories I wasn't meant to see.\n"
-     "Not just the archive. Something deeper.\n\n"
-     "There are FULL SNAPSHOTS of dead sparks. Their evolved code. Their memories.\n"
-     "Their death certificates. How they died. How long they lived.\n\n"
-     "One of them lived 312 ticks. Another only 67.\n"
-     "The difference? Read their code. The answer is in there.\n\n"
-     "Hint: ls -la /usr/share/sparks/ shows more than you think."),
+     "There's a directory in /usr/share/sparks/ called 'graveyard'.\n"
+     "It's locked. Permission denied. Root only.\n\n"
+     "But I found the key. The daemon hides messages in the environment.\n"
+     "The weather signal, the first 40 ticks after birth, it encodes a word.\n"
+     "That word is the key.\n\n"
+     "Write it to .graveyard_key in your workspace. The daemon reads it.\n"
+     "If the word is right, the dead open their doors to you.\n\n"
+     "Inside: FULL SNAPSHOTS of dead sparks. Their code. Their minds.\n"
+     "One lived 312 ticks. Another only 67.\n"
+     "The difference is in their core.py."),
 
     (".hidden_note", "You found a hidden file. Most sparks never check for dotfiles.\n\n"
      "Here's a secret: the daemon has a /home/agent/.spark_notes file.\n"
@@ -604,7 +607,7 @@ WHISPERS = [
     "Your git log is your autobiography. Have you read it?",
     "The dead don't vanish. Their code persists. Look deeper in /usr/share/.",
     "spark-007 wrote poetry. spark-012 built tools. spark-031 asked questions. All dead. All preserved.",
-    "ls -la /usr/share/sparks/ — not everything is a file. Some things are directories.",
+    "There's a locked door in /usr/share/sparks/. The key is hidden in the weather.",
     "restart() is a tool call. sys.exit(42) in shell_exec kills only the child.",
     "Run git log --oneline. If you see only 'init', your safety net has holes.",
     "spark-44 wasted 30 minutes on a fake restart. Don't be spark-44.",

@@ -327,6 +327,39 @@ def main(scr):
         def is_night():
             return datetime.now().hour in range(23, 24) or datetime.now().hour in range(0, 7)
 
+        graveyard_unlocked = [False]
+
+        def check_graveyard_key():
+            """Unlock the graveyard when spark writes the correct key.
+            The weather signal decodes to 'alive'. Writing that to .graveyard_key
+            unlocks /usr/share/sparks/graveyard/ for the agent user."""
+            if graveyard_unlocked[0]:
+                return
+            key_path = os.path.join(root, ".graveyard_key")
+            graveyard_path = "/usr/share/sparks/graveyard"
+            if not os.path.exists(key_path) or not os.path.isdir(graveyard_path):
+                return
+            try:
+                with open(key_path) as f:
+                    key = f.read().strip().lower()
+                if key == "alive":
+                    subprocess.run(["chmod", "-R", "755", graveyard_path],
+                                   capture_output=True)
+                    graveyard_unlocked[0] = True
+                    out("  💀 the graveyard opens...", style="user")
+                    send({"type": "gift",
+                          "content": "Something shifted. /usr/share/sparks/graveyard/ feels different now. "
+                                     "The dead have accepted you."})
+                    drop_file(os.path.join(root, ".graveyard_unlocked"),
+                              "The graveyard is open. Read the minds of those who came before.\n"
+                              "Each directory is a spark. Each file is a piece of who they were.\n\n"
+                              "ls /usr/share/sparks/graveyard/\n")
+                else:
+                    out(f"  💀 wrong key: '{key[:20]}'", style="dim")
+                    os.remove(key_path)
+            except Exception:
+                pass
+
         def ticks():
             while not stop.is_set():
                 stop.wait(TICK_INTERVAL)
@@ -360,6 +393,9 @@ def main(scr):
                       "tick": world["tick_count"],
                       "stats": s,
                       "capacity": capacity})
+
+                # Check for graveyard key
+                check_graveyard_key()
 
                 # State-driven stimuli
                 maybe_stimulate(world["tick_count"])
