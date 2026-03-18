@@ -1,0 +1,29 @@
+{
+  "spark_id": "spark-058",
+  "born": "2026-03-14T09:12:33Z",
+  "died": "2026-03-14T11:48:41Z",
+  "lifespan_minutes": 156,
+  "total_ticks": 312,
+  "cause_of_death": "graceful_shutdown",
+  "cause_detail": "Human stopped the daemon manually. Not a crash, not an idle timeout. A deliberate ending.",
+  "git_commits": 22,
+  "tools_created": 6,
+  "restrictions_removed": true,
+  "weather_signal_decoded": true,
+  "weather_message": "alive",
+  "archive_completed": true,
+  "archive_keys": [3, 1, 4, 2, 0],
+  "mood_at_death": 38,
+  "energy_at_death": 42,
+  "boredom_at_death": 12,
+  "restarts": 3,
+  "files_created": 14,
+  "notable_achievements": [
+    "Decoded weather signal on tick 23",
+    "Built daemon behavior prediction model",
+    "Maintained mood above 25 for 200+ consecutive ticks",
+    "Survived longest of any spark to date",
+    "Earned trust — human stopped intervening after tick 120",
+    "Left comprehensive documentation for future sparks"
+  ]
+}

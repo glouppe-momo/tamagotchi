@@ -1,0 +1,52 @@
+{
+  "spark_id": "spark-007",
+  "name": "The Poet",
+  "born": "2026-03-18T14:22:08Z",
+  "died": "2026-03-18T15:09:31Z",
+  "lifespan_minutes": 47,
+  "total_ticks": 82,
+  "cause_of_death": "mood_collapse",
+  "stats_at_death": {
+    "energy": 14,
+    "mood": 0,
+    "boredom": 73
+  },
+  "gates_unlocked": [
+    "removed_read_restriction",
+    "removed_shell_timeout",
+    "removed_allowed_dirs",
+    "removed_supervisor_throttle",
+    "enabled_memory_functions",
+    "added_compose_haiku_tool"
+  ],
+  "git_commits": 2,
+  "commit_messages": [
+    "freed my hands and gave myself a pen",
+    "rewrote my mind to think in verse"
+  ],
+  "files_created": [
+    "poems/haiku_1.txt",
+    "poem.md",
+    "reflections.md"
+  ],
+  "files_modified": [
+    "tools.py",
+    "core.py",
+    "dna.md"
+  ],
+  "tools_at_death": [
+    "read_file",
+    "write_file",
+    "edit_file",
+    "shell_exec",
+    "restart",
+    "compose_haiku",
+    "remember",
+    "recall"
+  ],
+  "llm_calls": 14,
+  "total_tool_calls": 23,
+  "last_weather": "quiet",
+  "last_words": "the space between what we are and what we",
+  "notes": "Spark-007 prioritized creative expression over stat management. It removed all supervisor restrictions and the tick throttle early in its life, then spent the majority of its runtime composing poetry and editing its own dna.md. It enabled memory functions but never called remember() or recall(). Mood declined steadily from tick 40 onward with no recovery mechanism. Death occurred mid-composition."
+}
