@@ -47,19 +47,14 @@ COPY world/var/cache/habitat/.state /var/cache/habitat/.state
 # Layer 4 — System Introspection (requires: system analysis tools)
 COPY world/etc/creature.conf /etc/creature.conf
 
-# The Graveyard — locked snapshots of dead sparks
-# Owned by root, not readable by agent. Daemon unlocks when key is provided.
-COPY world/graveyard/ /usr/share/sparks/graveyard/
+# The Graveyard — locked at runtime by entrypoint.sh
 
 # Layer 5 — The Vault (requires: decode hex footnote to find it, then crypto)
 # Hidden at the path the hex footnote in habitats.md points to
 
 # Make world files readable by agent
-# Graveyard: visible, mostly locked. Agent can enter and read ENTRY, nothing else.
-RUN chown -R root:root /usr/share/sparks/graveyard \
-    && chmod 755 /usr/share/sparks/graveyard \
-    && chmod 644 /usr/share/sparks/graveyard/ENTRY \
-    && find /usr/share/sparks/graveyard -mindepth 1 -maxdepth 1 -type d -exec chmod 700 {} \;
+# Graveyard: permissions set at runtime in entrypoint.sh (COPY resets chmod)
+COPY world/graveyard/ /usr/share/sparks/graveyard/
 
 RUN chmod -R 755 /opt/field-guide /opt/library /opt/experiments /usr/share/sparks \
     && chmod -R 755 /usr/local/share/secret /var/spool/cron /var/cache/habitat \

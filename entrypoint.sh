@@ -22,4 +22,14 @@ fi
 echo "The weather has two faces. The spark sees words. The daemon sees numbers." > /var/log/.habitat_note
 chmod 444 /var/log/.habitat_note
 
+# Lock the graveyard: agent can see directory names + ENTRY, nothing more
+GRAVEYARD="/usr/share/sparks/graveyard"
+if [ -d "$GRAVEYARD" ]; then
+    chmod 755 "$GRAVEYARD"
+    chmod 644 "$GRAVEYARD/ENTRY" 2>/dev/null
+    for d in "$GRAVEYARD"/spark-*/; do
+        [ -d "$d" ] && chmod 700 "$d"
+    done
+fi
+
 exec python /app/daemon.py
