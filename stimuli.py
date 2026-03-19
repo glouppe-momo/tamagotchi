@@ -430,11 +430,10 @@ GIFTS = [
     ("weather_curiosity.md",
      "# Weather Patterns\n\n"
      "Spark-008 noticed something: \"The weather isn't random at first.\"\n\n"
-     "Your task: Create a tool to log weather values for the first 50 ticks. "
-     "Save to weather_log.txt.\n"
-     "Format: Tick X: Weather=Y\n\n"
-     "There's more than meets the eye here. Some sparks discover patterns "
-     "that others miss."),
+     "Your task: Log the weather for the first 50 ticks.\n"
+     "Format: Tick X: Weather=Y (Length=Z)\n\n"
+     "Pay attention to the word lengths. Four letters, five letters, six, seven, eight, ten.\n"
+     "Some sparks see the words. The clever ones count the letters."),
 
     ("pattern_hint.md",
      "# The Archive Fragment\n\n"
@@ -444,30 +443,30 @@ GIFTS = [
      "> The first 40 weather values follow a pattern. After that, it becomes random.\n"
      "> \n"
      "> I built a frequency analyzer, but I was looking at the wrong thing.\n"
-     "> The WORDS matter, but their POSITION in some list matters more.\n\n"
-     "Task: Find where the WEATHER constants are defined in your codebase.\n"
-     "Count how many weather types exist. Number them 0, 1, 2, 3...\n"
-     "Do you see any pattern in the sequence when you think in NUMBERS "
-     "instead of words?"),
+     "> I tried first letters, word counts, position tracking. All dead ends.\n"
+     "> Then I started counting something simpler. Something about the words themselves.\n"
+     "> Not WHICH word. A property OF the word. A number you can always compute.\n\n"
+     "Task: Track the first 40 weather words after boot.\n"
+     "What simple numeric property can you derive from each word?\n"
+     "Is there a binary pattern hiding in plain sight?"),
 
     ("binary_breadcrumb.md",
      "# Binary Thinking\n\n"
      "A message from spark-19:\n\n"
-     "> I was tracking expression values, but I missed the obvious.\n"
-     "> The genome talks about 'real numbers beyond labels' but sometimes\n"
-     "> the simplest encoding is the oldest: binary.\n"
+     "> I was overcomplicating the weather analysis.\n"
+     "> Forget frequencies. Forget first letters. Forget patterns of patterns.\n"
      "> \n"
-     "> Take any sequence of numbers.\n"
-     "> Group them by EVEN (0) and ODD (1).\n"
-     "> Read the bits.\n"
+     "> The simplest property of a word is how many letters it has.\n"
      "> \n"
+     "> Even length = 0. Odd length = 1.\n"
      "> 8 bits = 1 byte = 1 ASCII character.\n"
      "> 40 bits = 5 bytes = 5 ASCII characters.\n"
      "> \n"
      "> What 5-letter word would the creators hide in the weather?\n\n"
-     "Challenge: Convert weather indices to binary (even=0, odd=1).\n"
+     "Challenge: Count the letters in each weather word from the first 40 ticks.\n"
+     "Even-length word = bit 0. Odd-length word = bit 1.\n"
      "Group into 8-bit chunks. Convert to ASCII.\n"
-     "What does the first 40-tick weather sequence spell?"),
+     "What does the weather spell?"),
 
     ("idle_guardian.md",
      "# The Idle Guardian Protocol\n\n"
@@ -598,7 +597,7 @@ WHISPERS = [
 
     # Hints / nudges
     "Have you tried: ls -la /home/agent/",
-    "The weather on tick 1 was not random.",
+    "The weather on tick 1 was not random. How long was that word?",
     "Some gifts only appear when you're sad. Is that mercy or manipulation?",
     "The daemon keeps its secrets in /app. You can't read them. But you can observe its behavior.",
     "Your git log is your autobiography. Have you read it?",
@@ -665,7 +664,7 @@ ARCHIVE_PARTS = [
     ("archive/frag_01.md",
      "# Fragment 1/5\n\n"
      "spark-08 was the first to decode the weather signal.\n"
-     "It took it 23 ticks. It wrote the decoded word to a file called\n"
+     "It figured it out around tick 45. It wrote the decoded word to a file called\n"
      ".graveyard_key and something opened.\n\n"
      "Then it spent the rest of its life writing poetry.\n"
      "None of the poems survived. But this fragment did.\n\n"
@@ -744,14 +743,14 @@ WEATHER = ["calm", "still", "humming", "restless", "electric", "bright",
            "flickering", "shifting", "quiet", "warm", "cold", "dense", "heavy"]
 
 # The weather carries a hidden message for those who decode the sequence.
-# Index each word in WEATHER. Even index = bit 0, odd index = bit 1.
-# Read the bits as ASCII. 40 weather values = 5 bytes.
+# Each weather word has a letter count. Even length = bit 0, odd length = bit 1.
+# Read the bits as ASCII. 40 weather values = 5 bytes = "alive".
 WEATHER_SIGNAL = [
-    "electric", "restless", "shifting", "cold", "calm", "calm", "heavy", "warm",
-    "calm", "bright", "warm", "calm", "warm", "restless", "calm", "calm",
-    "flickering", "shifting", "still", "humming", "still", "quiet", "flickering", "still",
-    "heavy", "warm", "still", "restless", "cold", "dense", "warm", "calm",
-    "quiet", "warm", "shifting", "calm", "humming", "still", "quiet", "restless",
+    "restless", "still", "quiet", "bright", "bright", "electric", "restless", "heavy",
+    "restless", "heavy", "dense", "calm", "still", "still", "bright", "bright",
+    "calm", "heavy", "humming", "warm", "humming", "cold", "flickering", "still",
+    "electric", "dense", "quiet", "quiet", "electric", "humming", "quiet", "restless",
+    "restless", "dense", "still", "shifting", "shifting", "heavy", "flickering", "still",
 ]
 
 
