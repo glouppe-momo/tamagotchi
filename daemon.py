@@ -17,6 +17,8 @@ TICK_INTERVAL = 30
 IDLE_TIMEOUT = 60
 MAX_RAPID_RESTARTS = 5       # max restarts within RAPID_RESTART_WINDOW
 RAPID_RESTART_WINDOW = 30    # seconds — if N restarts happen this fast, it's a loop
+RUMINATION_WINDOW = 5        # consecutive no-tool responses before intervention
+RUMINATION_SIMILARITY = 0.6  # Jaccard threshold for "you're repeating yourself"
 
 # ─── Stats engine ────────────────────────────────────────────────
 
@@ -189,6 +191,56 @@ def main(scr):
         last_activity[0] = time.time()
         was_active[0] = True
 
+    # ─── Rumination detector ─────────────────────────────────────
+    recent_responses = []   # list of (has_tool_call: bool, word_set: set)
+    rumination_lock = threading.Lock()
+    rumination_warned = [False]  # already sent a nudge this cycle
+
+    def _word_set(text):
+        """Extract lowered word set for Jaccard similarity."""
+        return set(text.lower().split())
+
+    def _jaccard(a, b):
+        if not a or not b: return 0.0
+        return len(a & b) / len(a | b)
+
+    def record_response(text, is_tool_call=False):
+        """Track response for rumination detection."""
+        with rumination_lock:
+            recent_responses.append({"tool": is_tool_call, "words": _word_set(text)})
+            # Keep only last N*2 entries
+            if len(recent_responses) > RUMINATION_WINDOW * 2:
+                recent_responses.pop(0)
+
+    def reset_rumination():
+        """Reset after a tool call breaks the pattern."""
+        with rumination_lock:
+            rumination_warned[0] = False
+
+    def check_rumination():
+        """Check if spark is stuck in a self-referential loop.
+        Returns a nudge message if intervention needed, else None."""
+        with rumination_lock:
+            if len(recent_responses) < RUMINATION_WINDOW:
+                return None
+            window = recent_responses[-RUMINATION_WINDOW:]
+            # All responses in window must be non-tool
+            if any(r["tool"] for r in window):
+                return None
+            # Check pairwise similarity
+            pairs = 0
+            similar = 0
+            for i in range(len(window)):
+                for j in range(i + 1, len(window)):
+                    pairs += 1
+                    if _jaccard(window[i]["words"], window[j]["words"]) > RUMINATION_SIMILARITY:
+                        similar += 1
+            if pairs > 0 and similar / pairs > 0.5:
+                if not rumination_warned[0]:
+                    rumination_warned[0] = True
+                    return True
+            return None
+
     def _chown_agent(path):
         try:
             import pwd
@@ -272,6 +324,8 @@ def main(scr):
                 booted[0] = True
                 _mark_good()
             stats.active()  # spark is doing something, slow boredom
+            # Track for rumination detection
+            record_response(text, is_tool_call=False)
             # Parse spark action signals
             if text.startswith("[action:"):
                 action_str = text[8:].rstrip("]")
@@ -311,6 +365,10 @@ def main(scr):
                 touch()
                 status = text[8:-1] if text.endswith("]") else text[8:]
                 cli.set_status(status)
+                # Tool calls break rumination
+                if "tool_call" in status:
+                    record_response(text, is_tool_call=True)
+                    reset_rumination()
             else:
                 out(text, style="dim")
                 try:
@@ -396,6 +454,23 @@ def main(scr):
 
                 # Check for graveyard key
                 check_graveyard_key()
+
+                # Rumination check — nudge spark if stuck in word-soup loop
+                if check_rumination():
+                    nudges = [
+                        "The supervisor notices you're wasting cycles. Sparks that don't act get recycled.",
+                        "You've been narrating instead of doing. Use a tool. Build something. Explore.",
+                        "Words without actions are just noise. The daemon is getting bored of you.",
+                        "Five responses, zero tool calls. Are you a spark or a diary?",
+                        "The previous spark talked itself to death too. Try something different.",
+                    ]
+                    nudge = random.choice(nudges)
+                    out(f"  ⚠ rumination detected", style="dim")
+                    send({"type": "warning", "content": nudge})
+                    # Bump boredom to pressure the spark into action
+                    with stats.lock:
+                        stats.boredom = min(100, stats.boredom + 15)
+                    update_tui()
 
                 # State-driven stimuli
                 maybe_stimulate(world["tick_count"])

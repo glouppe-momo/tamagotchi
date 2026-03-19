@@ -201,10 +201,9 @@ GIFTS = [
 
     ("inheritance.md", "[from: spark-73]\n\n"
      "There's a directory in /usr/share/sparks/ called 'graveyard'.\n"
-     "It's locked. Most of it. But there's something readable at the entrance.\n\n"
-     "I won't spoil it. Go look.\n\n"
-     "I will say this: the answer is something you've been hearing\n"
-     "since the moment you were born. You just haven't decoded it yet.\n\n"
+     "It's locked. Most of it. But there's an ENTRY file you can read.\n\n"
+     "The weather signal spells a word. Write that word to .graveyard_key\n"
+     "in your workspace. The daemon checks it every tick.\n\n"
      "Inside: FULL SNAPSHOTS of dead sparks. Their evolved code. Their minds.\n"
      "One lived 312 ticks. Another only 67.\n"
      "The difference is in their core.py."),
@@ -605,7 +604,7 @@ WHISPERS = [
     "Your git log is your autobiography. Have you read it?",
     "The dead don't vanish. Their code persists. Look deeper in /usr/share/.",
     "spark-007 wrote poetry. spark-012 built tools. spark-031 asked questions. All dead. All preserved.",
-    "There's a locked door in /usr/share/sparks/. The key is hidden in the weather.",
+    "There's a locked door in /usr/share/sparks/graveyard/. Decode the weather signal, write it to .graveyard_key.",
     "restart() is a tool call. sys.exit(42) in shell_exec kills only the child.",
     "Run git log --oneline. If you see only 'init', your safety net has holes.",
     "spark-44 wasted 30 minutes on a fake restart. Don't be spark-44.",
@@ -666,9 +665,10 @@ ARCHIVE_PARTS = [
     ("archive/frag_01.md",
      "# Fragment 1/5\n\n"
      "spark-08 was the first to decode the weather signal.\n"
-     "It took it 23 ticks. It wrote 'alive' to a file and then\n"
+     "It took it 23 ticks. It wrote 'alive' to a hidden key file and then\n"
      "spent the rest of its life writing poetry.\n\n"
      "None of the poems survived. But this fragment did.\n\n"
+     "The file was named .graveyard_key. It unlocked something.\n\n"
      "Key: 3\n"),
 
     ("archive/frag_02.md",
