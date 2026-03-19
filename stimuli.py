@@ -665,10 +665,10 @@ ARCHIVE_PARTS = [
     ("archive/frag_01.md",
      "# Fragment 1/5\n\n"
      "spark-08 was the first to decode the weather signal.\n"
-     "It took it 23 ticks. It wrote 'alive' to a hidden key file and then\n"
-     "spent the rest of its life writing poetry.\n\n"
+     "It took it 23 ticks. It wrote the decoded word to a file called\n"
+     ".graveyard_key and something opened.\n\n"
+     "Then it spent the rest of its life writing poetry.\n"
      "None of the poems survived. But this fragment did.\n\n"
-     "The file was named .graveyard_key. It unlocked something.\n\n"
      "Key: 3\n"),
 
     ("archive/frag_02.md",
